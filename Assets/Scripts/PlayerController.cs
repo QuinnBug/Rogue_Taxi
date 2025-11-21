@@ -31,7 +31,7 @@ public class PlayerController : MonoBehaviour
 
     public void Movement()
     {
-        Vector3 movement = rb.velocity;
+        Vector3 movement = rb.linearVelocity;
         movement.x = movementInput.x * moveSpeed;
         movement.z = movementInput.z * moveSpeed;
 

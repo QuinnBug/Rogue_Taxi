@@ -97,7 +97,7 @@ public class Turret : MonoBehaviour
                 //}
                 //end of adjustment
 
-                proj_rb.velocity = rb.velocity;
+                proj_rb.linearVelocity = rb.linearVelocity;
                 proj_rb.AddForce(force);
             }
         }

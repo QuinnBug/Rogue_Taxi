@@ -22,7 +22,7 @@ public class Harpoon : MonoBehaviour
     {
         if (stuck && Vector3.Distance(playerRb.transform.position, transform.position) >= hitDistance + ropeSlack)
         {
-            playerRb.AddForce((transform.position - playerRb.transform.position) * (playerRb.velocity.magnitude));
+            playerRb.AddForce((transform.position - playerRb.transform.position) * (playerRb.linearVelocity.magnitude));
         }
 
         lifetime -= Time.deltaTime;
@@ -45,8 +45,8 @@ public class Harpoon : MonoBehaviour
 
             rb.useGravity = false;
             rb.mass = Mathf.Infinity;
-            rb.drag = Mathf.Infinity;
-            rb.velocity = Vector3.zero;
+            rb.linearDamping = Mathf.Infinity;
+            rb.linearVelocity = Vector3.zero;
         }
     }
 }

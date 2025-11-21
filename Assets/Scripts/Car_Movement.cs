@@ -37,7 +37,7 @@ public class Car_Movement : MonoBehaviour
             Rotation();
         }
 
-        if (rb.velocity.sqrMagnitude >= 0.1f)
+        if (rb.linearVelocity.sqrMagnitude >= 0.1f)
         {
             //Rotation();
         }
