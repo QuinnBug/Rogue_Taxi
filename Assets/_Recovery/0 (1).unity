@@ -1350,13 +1350,13 @@ MonoBehaviour:
     finalString: '>f>f[ff][>ff][<<ff]'
     randomRuleOutput: 1
   count: 20
-  clampValues: 0
-  length: 100
+  clampValues: 1
+  length: 50
   angle: 45
   m_nodeLimitRange:
-    min: 50
-    max: 175
-  nodesPerStep: 100
+    min: 25
+    max: 100
+  nodesPerStep: 300
   timePerStep: 0.1
 --- !u!4 &2109595311
 Transform:

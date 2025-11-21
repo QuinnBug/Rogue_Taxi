@@ -1062,7 +1062,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1580675245}
   - component: {fileID: 1580675244}
-  - component: {fileID: 1580675246}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -1150,35 +1149,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
---- !u!114 &1580675246
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1580675243}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
-  m_UsePipelineSettings: 1
-  m_AdditionalLightsShadowResolutionTier: 2
-  m_CustomShadowLayers: 0
-  m_LightCookieSize: {x: 1, y: 1}
-  m_LightCookieOffset: {x: 0, y: 0}
-  m_SoftShadowQuality: 0
-  m_RenderingLayersMask:
-    serializedVersion: 0
-    m_Bits: 1
-  m_ShadowRenderingLayersMask:
-    serializedVersion: 0
-    m_Bits: 1
-  m_Version: 4
-  m_LightLayerMask: 1
-  m_ShadowLayerMask: 1
-  m_RenderingLayers: 1
-  m_ShadowRenderingLayers: 1
 --- !u!1 &1808407560
 GameObject:
   m_ObjectHideFlags: 0
@@ -1320,7 +1290,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   showConnections: 1
-  showNodes: 0
+  showNodes: 1
   lSys:
     rules:
     - input: 111
@@ -1349,15 +1319,15 @@ MonoBehaviour:
     axiom: o
     finalString: '>f>f[ff][>ff][<<ff]'
     randomRuleOutput: 1
-  count: 20
-  clampValues: 0
-  length: 100
-  angle: 45
-  m_nodeLimitRange:
-    min: 50
-    max: 175
+  count: 50
+  clampValues: 1
+  length: 50
+  angle: 90
+  nodeLimitRange:
+    min: 25
+    max: 100
   nodesPerStep: 100
-  timePerStep: 0.1
+  timePerStep: 0.025
 --- !u!4 &2109595311
 Transform:
   m_ObjectHideFlags: 0

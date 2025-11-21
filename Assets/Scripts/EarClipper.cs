@@ -28,7 +28,7 @@ namespace Earclipping
 		public void Start()
 		{
 			displayEarTip = null;
-			nmc = FindObjectOfType<NodeMeshConstructor>();
+			nmc = FindFirstObjectByType<NodeMeshConstructor>();
 			triList = null;
 			//clippingDone = false;
 		}

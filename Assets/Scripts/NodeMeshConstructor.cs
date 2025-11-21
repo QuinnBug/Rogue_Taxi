@@ -47,7 +47,7 @@ public class NodeMeshConstructor : MonoBehaviour
     {
         polygons = new List<Polygon>();
 
-        foreach (Node node in nodeManager.nodes)
+        foreach (Node node in nodeManager.AllNodes())
         {
             if (node.connections.Count == 0) continue;
 
@@ -362,7 +362,7 @@ public class NodeMeshConstructor : MonoBehaviour
 
     public void ValueClamps(bool forceUpdate = false)
     {
-        if (nodeRadius >= (nodeManager.nodeLimitRange.min / 2)*0.75f || forceUpdate)
+        if (nodeRadius >= (nodeManager.m_nodeLimitRange.min / 2)*0.75f || forceUpdate)
         {
             //nodeRadius = (nodeManager.nodeLimitRange.min / 2) * 0.75f;
         }
@@ -375,9 +375,9 @@ public class NodeMeshConstructor : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        if (nodeManager != null && nodeManager.nodes != null && drawPoints)
+        if (nodeManager != null && nodeManager.m_nodeMap != null && drawPoints)
         {
-            foreach (Node node in nodeManager.nodes)
+            foreach (Node node in nodeManager.AllNodes())
             {
                 Gizmos.color = Color.gray;
                 Gizmos.DrawSphere(node.point, nodeRadius);

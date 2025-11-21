@@ -15,7 +15,7 @@ public abstract class Singleton<T> : MonoBehaviour where T : Singleton<T>
         }
         else
         {
-            _instance = FindObjectOfType<T>();
+            _instance = FindFirstObjectByType<T>();
             DontDestroyOnLoad(_instance);
         }
     }

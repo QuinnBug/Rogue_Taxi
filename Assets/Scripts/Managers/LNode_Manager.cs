@@ -2,13 +2,17 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
 using Random = UnityEngine.Random;
+using NodeMap = System.Collections.Generic.Dictionary<UnityEngine.Vector2Int, System.Collections.Generic.List<Node>>;
+using NUnit.Framework;
 
 /// <summary>
 /// Uses an L system to generate a sequence of roads, and then creates a mesh for each of them
 /// </summary>
 public class LNode_Manager : Singleton<LNode_Manager>
 {
+
     [Space]
     public bool showConnections = false;
     public bool showNodes = false;
@@ -21,10 +25,11 @@ public class LNode_Manager : Singleton<LNode_Manager>
     [Space]
     public int angle;
     //below the minimum the nodes combine, above the maximum connections are broken
-    public Range nodeLimitRange;
+    public Range m_nodeLimitRange;
     public int nodesPerStep = 50;
     public float timePerStep;
-    internal List<Node> nodes = new List<Node>();
+    //internal List<Node> nodes = new List<Node>();
+    internal NodeMap m_nodeMap = new NodeMap();
 
     internal bool nodeGenDone = false;
 
@@ -40,7 +45,7 @@ public class LNode_Manager : Singleton<LNode_Manager>
         StartCoroutine(CreateRouteCoroutine(lSys.finalString));
     }
 
-    public IEnumerator CreateRouteCoroutine(string sequence)
+    public IEnumerator CreateRouteCoroutine(string _sequence)
     {
         int counter = 0;
         Stack<LAgent> savePoints = new Stack<LAgent>();
@@ -48,10 +53,13 @@ public class LNode_Manager : Singleton<LNode_Manager>
         Vector3 tempPos = currentPos;
         Vector3 direction = Vector3.forward;
 
-        nodes = new List<Node>() { new Node(currentPos) };
-        Node prevNode = nodes[0];
+        m_nodeMap = new NodeMap();
+        Vector2Int startingMapKey = WorldPosToMapKey(currentPos);
+        m_nodeMap.TryAdd(startingMapKey, new List<Node>());
+        m_nodeMap[startingMapKey].Add(new Node(currentPos));
+        Node prevNode = m_nodeMap[startingMapKey][0];
 
-        foreach (char letter in sequence)
+        foreach (char letter in _sequence)
         {
             Instructions _instruction = (Instructions)letter;
             switch (_instruction)
@@ -83,14 +91,20 @@ public class LNode_Manager : Singleton<LNode_Manager>
                         tempPos = ag.tempPos;
                         direction = ag.direction;
                         length = ag.length;
+                        List<Node> localNodes = GetNodesInRange(currentPos, (int)Math.Ceiling(m_nodeLimitRange.min));
 
-                        foreach (Node item in nodes)
+                        if (localNodes.Count == 0) { Debug.LogError("[LNM] No nodes found at loaded position"); }
+                        foreach (Node item in localNodes)
                         {
-                            if (currentPos == item.point)
+                            if (Vector3.Distance(currentPos, item.point) <= m_nodeLimitRange.min)
                             {
                                 prevNode = item;
+                                break;
                             }
                         }
+
+                        //Debug.DrawLine(currentPos + (Vector3.up * 2), currentPos + (-direction * length), Color.orange, 300);
+                        //Debug.LogError("[LNM] Didn't find a current node");
                     }
                     break;
 
@@ -106,99 +120,174 @@ public class LNode_Manager : Singleton<LNode_Manager>
             }
         }
 
-        Debug.Log("Route Done");
+        Debug.Log("[LNM] Route Done");
 
         //sort each nodes connections
-        foreach (Node item in nodes)
+        foreach (List<Node> nodeList in m_nodeMap.Values) 
         {
-            item.SortConnections();
+            foreach (Node item in nodeList)
+            {
+                item.SortConnections();
+            }
         }
 
         nodeGenDone = true;
     }
 
-    private Node AddNode(Vector3 pos, Node parent)
+    private Node AddNode(Vector3 _position, Node _parent)
     {
-        bool crossover = false;
+        Node nodeAtPosition = new Node(_position);
 
-        Node newSpace = new Node(pos);
-        foreach (Node item in nodes)
+        List<Node> nodesInRange = GetNodesInRange(_position, (int)Math.Ceiling(m_nodeLimitRange.min));
+        foreach (Node item in nodesInRange)
         {
-            if (pos == item.point || Vector3.Distance(pos, item.point) <= nodeLimitRange.min)
+            if (_position == item.point || Vector3.Distance(_position, item.point) <= m_nodeLimitRange.min)
             {
-                parent.AddConnection(item);
-                //return item;
-                newSpace = item;
+                nodeAtPosition = item;
                 break;
             }
         }
 
-        Line connLine = new Line(newSpace.point, parent.point);
-        Line testLine = new Line(Vector3.zero, Vector3.zero);
-        foreach (Node item in nodes)
+        nodeAtPosition.AddConnection(_parent);
+
+        //Untangle any connection crossovers
+        nodesInRange = GetNodesInRange(nodeAtPosition.point, (int)Math.Ceiling(m_nodeLimitRange.max * 2));
+        for (int i = 0; i < nodesInRange.Count; ++i)
         {
-            testLine.a = item.point;
-            for (int i = 0; i < item.connections.Count; i++)
+            if (_parent == nodesInRange[i] || nodeAtPosition == nodesInRange[i]) { continue; }
+
+            if (TestConnectionIntersectionsWithLine(nodeAtPosition, _parent, nodesInRange[i]))
             {
-                Node otherItem = item.connections[i];
-                testLine.b = otherItem.point;
-                if (connLine.DoesIntersect(testLine, out Vector3 intersection))
+                _parent = nodesInRange[i];
+                --i;
+            }
+        }
+
+        Vector2Int mapKey = WorldPosToMapKey(nodeAtPosition.point);
+        m_nodeMap.TryAdd(mapKey, new List<Node>());
+        m_nodeMap[mapKey].Add(nodeAtPosition);
+
+        return nodeAtPosition;
+    }
+
+    public void ValueClamps(bool _forceUpdate = false) 
+    {
+        if (m_nodeLimitRange.min >= length / 2.0f || _forceUpdate)
+        {
+            m_nodeLimitRange.min = length / 2.0f;
+        }
+
+        if (m_nodeLimitRange.max <= length * 2.0f || _forceUpdate)
+        {
+            m_nodeLimitRange.max = length * 2.0f;
+        }
+    }
+
+    bool TestConnectionIntersectionsWithLine(Node _newNode, Node _parentNode, Node _otherNode) 
+    {
+        Line lineToParent = new Line(_newNode.point, _parentNode.point);
+        Line lineBetweenConnections = new Line(_otherNode.point, Vector3.zero);
+
+        Node otherConnectedNode = _otherNode.connections[0];
+        for (int i = 0; i < _otherNode.connections.Count; ++i)
+        {
+            otherConnectedNode = _otherNode.connections[i];
+            if (otherConnectedNode == _parentNode || otherConnectedNode == _newNode) { continue; }
+
+            lineBetweenConnections.b = otherConnectedNode.point;
+
+            if (lineToParent.DoesIntersect(lineBetweenConnections, out Vector3 intersection))
+            {
+                //Debug.DrawLine(lineBetweenConnections.a + Vector3.up, lineBetweenConnections.b + Vector3.up, Color.red, 300);
+                //Debug.DrawLine(lineToParent.a + (Vector3.up*5), lineToParent.b + (Vector3.up * 3), Color.purple, 300);
+
+                _newNode.RemoveConnection(_parentNode);
+                _otherNode.RemoveConnection(otherConnectedNode);
+
+                _newNode.AddConnection(_otherNode);
+                _newNode.AddConnection(otherConnectedNode);
+
+                _parentNode.AddConnection(_otherNode);
+                _parentNode.AddConnection(otherConnectedNode);
+
+                //_newNode.RemoveConnection(_parentNode);
+                //_otherNode.AddConnection(_newNode);
+                //_otherNode.AddConnection(_parentNode);
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public Vector2Int WorldPosToMapKey(Vector3 _position)
+    {
+        return new Vector2Int((int)Math.Floor(_position.x), (int)Math.Floor(_position.z));
+    }
+
+    public List<Node> GetNodesInRange(Vector3 _position, int _range) 
+    {
+        List<Node> nodeList = new List<Node>();
+
+        Vector2Int centralKey = WorldPosToMapKey(_position);
+        Vector2Int rangeKey = new Vector2Int(0,0);
+
+        for (int x = -_range; x < _range; ++x)
+        {
+            for (int y = -_range; y < _range; ++y)
+            {
+                rangeKey.x = centralKey.x + x;
+                rangeKey.y = centralKey.y + y;
+
+                if (m_nodeMap.ContainsKey(rangeKey)) 
                 {
-                    item.RemoveConnection(otherItem);
-                    i--;
-
-                    //item.AddConnection(parent);
-                    //item.AddConnection(newSpace);
-
-                    //otherItem.AddConnection(parent);
-                    //otherItem.AddConnection(newSpace);
-
-                    //crossover = true;
+                    nodeList.AddRange(m_nodeMap[rangeKey]);
                 }
             }
         }
 
-        if(!crossover) newSpace.AddConnection(parent);
-        nodes.Add(newSpace);
-        return newSpace;
+        return nodeList;
+    }
+
+    public List<Node> AllNodes()
+    {
+        List<Node> allNodes = new List<Node>();
+
+        foreach (List<Node> nodeList in m_nodeMap.Values)
+        {
+            allNodes.AddRange(nodeList);
+        }
+
+        return allNodes;
     }
 
     private void OnValidate()
     {
-        ValueClamps(clampValues);
+        //ValueClamps(clampValues);
     }
 
-    public void ValueClamps(bool forceUpdate = false) 
+    private void OnDrawGizmos()
     {
-        if (nodeLimitRange.min >= length / 2.0f || forceUpdate)
+        if (m_nodeMap != null)
         {
-            nodeLimitRange.min = length / 2.0f;
-        }
-
-        if (nodeLimitRange.max <= length * 2.0f || forceUpdate)
-        {
-            nodeLimitRange.max = length * 2.0f;
-        }
-    }
-
-    private void OnDrawGizmosSelected()
-    {
-        if (nodes != null)
-        {
-            foreach (Node item in nodes)
+            foreach (List<Node> nodeList in m_nodeMap.Values)
             {
-                if (showNodes)
+                foreach (Node item in nodeList)
                 {
-                    Gizmos.color = Color.red;
-                    Gizmos.DrawSphere(item.point, length / 10.0f);
-                }
-
-                if (showConnections)
-                {
-                    foreach (Node node in item.connections)
+                    if (showNodes)
                     {
-                        Gizmos.color = Color.blue;
-                        Gizmos.DrawLine(item.point, node.point);
+                        Gizmos.color = Color.red;
+                        Gizmos.DrawSphere(item.point, length / 10.0f);
+                    }
+
+                    if (showConnections)
+                    {
+                        foreach (Node node in item.connections)
+                        {
+                            Gizmos.color = Color.blue;
+                            Gizmos.DrawLine(item.point, item.point + ((node.point - item.point) * 0.5f));
+                        }
                     }
                 }
             }
@@ -230,11 +319,16 @@ public class Node
 
     public void AddConnection(Node node) 
     {
-        //if node
 
-        if (node == this || connections.Contains(node) || Vector3.Distance(point, node.point) >= LNode_Manager.Instance.nodeLimitRange.max)
+        if (node == this || connections.Contains(node) || Vector3.Distance(point, node.point) >= LNode_Manager.Instance.m_nodeLimitRange.max)
+        {
+            if (Vector3.Distance(point, node.point) >= LNode_Manager.Instance.m_nodeLimitRange.max)
+            {
+                Debug.DrawLine(point, node.point, Color.purple, 300);
+            }
             return;
-        else 
+        }
+        else
         {
             connections.Add(node);
             node.connections.Add(this);
@@ -245,7 +339,7 @@ public class Node
     public void RemoveConnection(Node node) 
     {
         if (node == this || !connections.Contains(node))
-            return;
+        { return; }
         else
         {
             node.connections.Remove(this);
