@@ -327,6 +327,12 @@ namespace Earclipping
 			List<Line> tempLines = new List<Line>(lines);
 			List<Vertex> points = new List<Vertex>();
 
+			if(SortLines(tempLines, out List<Line> sortedLines)) 
+			{
+				tempLines = sortedLines;
+			}
+
+			//add the first line
 			points.Add(new Vertex(tempLines[0].a));
 			points.Add(new Vertex(tempLines[0].b));
 			tempLines.RemoveAt(0);
@@ -339,7 +345,7 @@ namespace Earclipping
 				bool closeA = false;
 				float closestDist = 9999999999;
 
-                for (int i = 0; i < tempLines.Count; i++)
+                for (int i = 0; i < tempLines.Count; ++i)
                 {
 					if (tempLines[i].a == points[points.Count - 1].point)
 					{
@@ -375,7 +381,7 @@ namespace Earclipping
 					points.Add(new Vertex(!closeA ? tempLines[closestIdx].a : tempLines[closestIdx].b));
 
 					tempLines.RemoveAt(closestIdx);
-					Debug.Log("no identical line in tLine " + center);
+					//Debug.Log("no identical line in tLine " + center);
                 }
             }
             
@@ -438,6 +444,42 @@ namespace Earclipping
 
 			return true;
         }
+
+		internal bool SortLines(List<Line> _lines, out List<Line> _sortedLines) 
+		{
+			_sortedLines = new List<Line>();
+			_sortedLines.Add(_lines[0]);
+            for (int i = 0; i < _sortedLines.Count; ++i)
+            {
+				bool found = false;
+				foreach (Line secondLine in _lines) 
+				{
+					if (_sortedLines.Contains(secondLine)) { continue; }
+
+					if (_sortedLines[i].b == secondLine.a) 
+					{
+						_sortedLines.Add(secondLine);
+						found = true;
+						break;
+					}
+					else if (_sortedLines[i].b == secondLine.b) 
+					{
+						secondLine.Flip();
+						_sortedLines.Add(secondLine);
+						found = true;
+						break;
+					}
+				}
+
+				if (!found) 
+				{
+					Debug.LogError("[Polygon.SortLines] There was no matching points between lines");
+					return false;
+				}
+			}
+
+			return true;
+		}
 
 		public void DebugDraw(Color color, float duration, bool connecteds = false) 
 		{

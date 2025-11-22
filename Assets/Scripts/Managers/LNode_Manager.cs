@@ -12,20 +12,18 @@ using NUnit.Framework;
 /// </summary>
 public class LNode_Manager : Singleton<LNode_Manager>
 {
-
-    [Space]
     public bool showConnections = false;
     public bool showNodes = false;
     [Space]
     public LSystem lSys = new LSystem();
     public int count = 5;
     [Space]
-    public bool clampValues = false;
-    public int m_length;
-    [Space]
     public int angle;
+    public int m_length;
     //below the minimum the nodes combine, above the maximum connections are broken
     public Range m_nodeLimitRange;
+    public bool clampValues = false;
+    [Space]
     public int nodesPerStep = 50;
     public float timePerStep;
     //internal List<Node> nodes = new List<Node>();
@@ -112,11 +110,9 @@ public class LNode_Manager : Singleton<LNode_Manager>
                     break;
             }
 
-            //Debug.Log("Counter = " + counter);
             if (counter % nodesPerStep == 0)
             {
-                //Debug.Log("Step");
-                yield return new WaitForSeconds(timePerStep);
+                if (timePerStep > 0) { yield return new WaitForSeconds(timePerStep);}
             }
         }
 
@@ -128,14 +124,11 @@ public class LNode_Manager : Singleton<LNode_Manager>
         {
             foreach (Node item in nodeList)
             {
-                ++counter;
-
                 UntangleNode(item);
-                item.SortConnections();
 
-                if (counter % nodesPerStep == 0)
+                if (++counter % nodesPerStep == 0)
                 {
-                    yield return new WaitForSeconds(timePerStep);
+                    if (timePerStep > 0) { yield return new WaitForSeconds(timePerStep);}
                 }
             }
         }

@@ -1349,15 +1349,15 @@ MonoBehaviour:
     axiom: o
     finalString: '>f>f[ff][>ff][<<ff]'
     randomRuleOutput: 1
-  count: 20
-  clampValues: 0
-  m_length: 100
-  angle: 45
+  count: 3
+  angle: 30
+  m_length: 50
   m_nodeLimitRange:
-    min: 50
-    max: 175
-  nodesPerStep: 100
-  timePerStep: 0.1
+    min: 40
+    max: 110
+  clampValues: 0
+  nodesPerStep: 200
+  timePerStep: 0.01
 --- !u!4 &2109595311
 Transform:
   m_ObjectHideFlags: 0
@@ -1380,20 +1380,21 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2109595309}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 83e7b09b4b007a84493a949705dd8ab8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  nodeManager: {fileID: 2109595310}
-  roadWidth: 8
-  nodeRadius: 16
-  doubleSided: 0
-  extrude: 1
-  extrusionDepth: 8
+  s_nodeManager: {fileID: 2109595310}
+  m_roadWidth: 3
+  m_nodeRadius: 10
+  m_doubleSided: 0
+  m_extrude: 0
+  m_extrusionDepth: -1
   drawPoints: 0
-  drawPolygons: 0
-  timePerNode: 0
+  drawPolygons: 1
+  nodesPerStep: 20
+  timePerNode: 0.01
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
