@@ -21,7 +21,7 @@ public class LNode_Manager : Singleton<LNode_Manager>
     public int count = 5;
     [Space]
     public bool clampValues = false;
-    public int length;
+    public int m_length;
     [Space]
     public int angle;
     //below the minimum the nodes combine, above the maximum connections are broken
@@ -65,7 +65,7 @@ public class LNode_Manager : Singleton<LNode_Manager>
             switch (_instruction)
             {
                 case Instructions.DRAW:
-                    currentPos += direction * length;
+                    currentPos += direction * m_length;
                     prevNode = AddNode(currentPos, prevNode);
                     counter++;
                     tempPos = currentPos;
@@ -80,7 +80,7 @@ public class LNode_Manager : Singleton<LNode_Manager>
                     break;
 
                 case Instructions.SAVE:
-                    savePoints.Push(new LAgent(currentPos, tempPos, direction, length));
+                    savePoints.Push(new LAgent(currentPos, tempPos, direction, m_length));
                     break;
 
                 case Instructions.LOAD:
@@ -90,7 +90,7 @@ public class LNode_Manager : Singleton<LNode_Manager>
                         currentPos = ag.position;
                         tempPos = ag.tempPos;
                         direction = ag.direction;
-                        length = ag.length;
+                        m_length = ag.length;
                         List<Node> localNodes = GetNodesInRange(currentPos, (int)Math.Ceiling(m_nodeLimitRange.min));
 
                         if (localNodes.Count == 0) { Debug.LogError("[LNM] No nodes found at loaded position"); }
@@ -120,16 +120,27 @@ public class LNode_Manager : Singleton<LNode_Manager>
             }
         }
 
-        Debug.Log("[LNM] Route Done");
+        Debug.Log("[LNM] Sequence Plotted - Starting Untangling of intersections");
 
         //sort each nodes connections
+        counter = 0;
         foreach (List<Node> nodeList in m_nodeMap.Values) 
         {
             foreach (Node item in nodeList)
             {
+                ++counter;
+
+                UntangleNode(item);
                 item.SortConnections();
+
+                if (counter % nodesPerStep == 0)
+                {
+                    yield return new WaitForSeconds(timePerStep);
+                }
             }
         }
+
+        Debug.Log("[LNM] Nodes Untangled - Generation complete (Node Count = " + counter + ")");
 
         nodeGenDone = true;
     }
@@ -150,19 +161,6 @@ public class LNode_Manager : Singleton<LNode_Manager>
 
         nodeAtPosition.AddConnection(_parent);
 
-        //Untangle any connection crossovers
-        nodesInRange = GetNodesInRange(nodeAtPosition.point, (int)Math.Ceiling(m_nodeLimitRange.max * 2));
-        for (int i = 0; i < nodesInRange.Count; ++i)
-        {
-            if (_parent == nodesInRange[i] || nodeAtPosition == nodesInRange[i]) { continue; }
-
-            if (TestConnectionIntersectionsWithLine(nodeAtPosition, _parent, nodesInRange[i]))
-            {
-                _parent = nodesInRange[i];
-                --i;
-            }
-        }
-
         Vector2Int mapKey = WorldPosToMapKey(nodeAtPosition.point);
         m_nodeMap.TryAdd(mapKey, new List<Node>());
         m_nodeMap[mapKey].Add(nodeAtPosition);
@@ -170,50 +168,68 @@ public class LNode_Manager : Singleton<LNode_Manager>
         return nodeAtPosition;
     }
 
-    public void ValueClamps(bool _forceUpdate = false) 
+    private void UntangleNode(Node focusNode)
     {
-        if (m_nodeLimitRange.min >= length / 2.0f || _forceUpdate)
+        //Untangle any connection crossovers
+        List<Node> nodesInRange = GetNodesInRange(focusNode.point, (int)Math.Ceiling(m_nodeLimitRange.max) + 1);
+
+        for (int c = 0; c < focusNode.connections.Count; ++c)
         {
-            m_nodeLimitRange.min = length / 2.0f;
+            Node connectedNode = focusNode.connections[c];
+
+            for (int i = 0; i < nodesInRange.Count; ++i)
+            {
+                if (connectedNode == nodesInRange[i] || focusNode == nodesInRange[i]) { continue; }
+                Node checkingNode = nodesInRange[i];
+
+                if (TestConnectionIntersectionsWithLine(focusNode, connectedNode, checkingNode, out Node intersectedNode))
+                {
+                    focusNode.RemoveConnection(connectedNode);
+                    checkingNode.RemoveConnection(intersectedNode);
+
+                    focusNode.AddConnection(checkingNode);
+                    focusNode.AddConnection(intersectedNode);
+
+                    connectedNode.AddConnection(checkingNode);
+                    connectedNode.AddConnection(intersectedNode);
+
+                    --c;
+                    break;
+                }
+            }
         }
 
-        if (m_nodeLimitRange.max <= length * 2.0f || _forceUpdate)
+        
+    }
+
+    public void ValueClamps(bool _forceUpdate = false) 
+    {
+        if (m_nodeLimitRange.min >= m_length / 2.0f || _forceUpdate)
         {
-            m_nodeLimitRange.max = length * 2.0f;
+            m_nodeLimitRange.min = m_length / 2.0f;
+        }
+
+        if (m_nodeLimitRange.max <= m_length * 2.0f || _forceUpdate)
+        {
+            m_nodeLimitRange.max = m_length * 2.0f;
         }
     }
 
-    bool TestConnectionIntersectionsWithLine(Node _newNode, Node _parentNode, Node _otherNode) 
+    bool TestConnectionIntersectionsWithLine(Node _startNode, Node _endNode, Node _checkNode, out Node _intersectedNode) 
     {
-        Line lineToParent = new Line(_newNode.point, _parentNode.point);
-        Line lineBetweenConnections = new Line(_otherNode.point, Vector3.zero);
+        Line lineToParent = new Line(_startNode.point, _endNode.point);
+        Line lineBetweenConnections = new Line(_checkNode.point, Vector3.zero);
 
-        Node otherConnectedNode = _otherNode.connections[0];
-        for (int i = 0; i < _otherNode.connections.Count; ++i)
+        _intersectedNode = _checkNode.connections[0];
+        for (int i = 0; i < _checkNode.connections.Count; ++i)
         {
-            otherConnectedNode = _otherNode.connections[i];
-            if (otherConnectedNode == _parentNode || otherConnectedNode == _newNode) { continue; }
+            if (_intersectedNode == _endNode || _intersectedNode == _startNode) { continue; }
+            _intersectedNode = _checkNode.connections[i];
 
-            lineBetweenConnections.b = otherConnectedNode.point;
+            lineBetweenConnections.b = _intersectedNode.point;
 
             if (lineToParent.DoesIntersect(lineBetweenConnections, out Vector3 intersection))
             {
-                //Debug.DrawLine(lineBetweenConnections.a + Vector3.up, lineBetweenConnections.b + Vector3.up, Color.red, 300);
-                //Debug.DrawLine(lineToParent.a + (Vector3.up*5), lineToParent.b + (Vector3.up * 3), Color.purple, 300);
-
-                _newNode.RemoveConnection(_parentNode);
-                _otherNode.RemoveConnection(otherConnectedNode);
-
-                _newNode.AddConnection(_otherNode);
-                _newNode.AddConnection(otherConnectedNode);
-
-                _parentNode.AddConnection(_otherNode);
-                _parentNode.AddConnection(otherConnectedNode);
-
-                //_newNode.RemoveConnection(_parentNode);
-                //_otherNode.AddConnection(_newNode);
-                //_otherNode.AddConnection(_parentNode);
-
                 return true;
             }
         }
@@ -278,7 +294,7 @@ public class LNode_Manager : Singleton<LNode_Manager>
                     if (showNodes)
                     {
                         Gizmos.color = Color.red;
-                        Gizmos.DrawSphere(item.point, length / 10.0f);
+                        Gizmos.DrawSphere(item.point, m_length / 10.0f);
                     }
 
                     if (showConnections)
