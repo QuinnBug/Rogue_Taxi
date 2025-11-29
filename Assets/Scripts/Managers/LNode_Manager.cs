@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using Random = UnityEngine.Random;
+using NodeList = System.Collections.Generic.List<Node>;
 using NodeMap = System.Collections.Generic.Dictionary<UnityEngine.Vector2Int, System.Collections.Generic.List<Node>>;
-using NUnit.Framework;
+using UnityEditor.Experimental.GraphView;
 
 /// <summary>
 /// Uses an L system to generate a sequence of roads, and then creates a mesh for each of them
@@ -26,7 +27,6 @@ public class LNode_Manager : Singleton<LNode_Manager>
     [Space]
     public int nodesPerStep = 50;
     public float timePerStep;
-    //internal List<Node> nodes = new List<Node>();
     internal NodeMap m_nodeMap = new NodeMap();
 
     internal bool nodeGenDone = false;
@@ -53,7 +53,7 @@ public class LNode_Manager : Singleton<LNode_Manager>
 
         m_nodeMap = new NodeMap();
         Vector2Int startingMapKey = WorldPosToMapKey(currentPos);
-        m_nodeMap.TryAdd(startingMapKey, new List<Node>());
+        m_nodeMap.TryAdd(startingMapKey, new NodeList());
         m_nodeMap[startingMapKey].Add(new Node(currentPos));
         Node prevNode = m_nodeMap[startingMapKey][0];
 
@@ -120,7 +120,7 @@ public class LNode_Manager : Singleton<LNode_Manager>
 
         //sort each nodes connections
         counter = 0;
-        foreach (List<Node> nodeList in m_nodeMap.Values) 
+        foreach (NodeList nodeList in m_nodeMap.Values) 
         {
             foreach (Node item in nodeList)
             {
@@ -142,12 +142,15 @@ public class LNode_Manager : Singleton<LNode_Manager>
     {
         Node nodeAtPosition = new Node(_position);
 
-        List<Node> nodesInRange = GetNodesInRange(_position, (int)Math.Ceiling(m_nodeLimitRange.min));
+        bool isNew = true;
+
+        NodeList nodesInRange = GetNodesInRange(_position, (int)Mathf.Ceil(m_nodeLimitRange.min));
         foreach (Node item in nodesInRange)
         {
             if (_position == item.point || Vector3.Distance(_position, item.point) <= m_nodeLimitRange.min)
             {
                 nodeAtPosition = item;
+                isNew = false;
                 break;
             }
         }
@@ -155,8 +158,12 @@ public class LNode_Manager : Singleton<LNode_Manager>
         nodeAtPosition.AddConnection(_parent);
 
         Vector2Int mapKey = WorldPosToMapKey(nodeAtPosition.point);
-        m_nodeMap.TryAdd(mapKey, new List<Node>());
-        m_nodeMap[mapKey].Add(nodeAtPosition);
+
+        if (isNew)
+        { 
+            m_nodeMap.TryAdd(mapKey, new NodeList());
+            m_nodeMap[mapKey].Add(nodeAtPosition);
+        }
 
         return nodeAtPosition;
     }
@@ -232,12 +239,12 @@ public class LNode_Manager : Singleton<LNode_Manager>
 
     public Vector2Int WorldPosToMapKey(Vector3 _position)
     {
-        return new Vector2Int((int)Math.Floor(_position.x), (int)Math.Floor(_position.z));
+        return new Vector2Int((int)Mathf.Floor(_position.x), (int)Mathf.Floor(_position.z));
     }
 
-    public List<Node> GetNodesInRange(Vector3 _position, int _range) 
+    public NodeList GetNodesInRange(Vector3 _position, int _range) 
     {
-        List<Node> nodeList = new List<Node>();
+        NodeList nodeList = new NodeList();
 
         Vector2Int centralKey = WorldPosToMapKey(_position);
         Vector2Int rangeKey = new Vector2Int(0,0);
@@ -259,11 +266,11 @@ public class LNode_Manager : Singleton<LNode_Manager>
         return nodeList;
     }
 
-    public List<Node> AllNodes()
+    public NodeList AllNodes()
     {
-        List<Node> allNodes = new List<Node>();
+        NodeList allNodes = new NodeList();
 
-        foreach (List<Node> nodeList in m_nodeMap.Values)
+        foreach (NodeList nodeList in m_nodeMap.Values)
         {
             allNodes.AddRange(nodeList);
         }
@@ -280,7 +287,7 @@ public class LNode_Manager : Singleton<LNode_Manager>
     {
         if (m_nodeMap != null)
         {
-            foreach (List<Node> nodeList in m_nodeMap.Values)
+            foreach (NodeList nodeList in m_nodeMap.Values)
             {
                 foreach (Node item in nodeList)
                 {
@@ -363,71 +370,27 @@ public class Node
 
     public void SortConnections()
     {
-        connections.Sort(new ClockwiseComparer(Vector2.right));
+        ClockwiseComparer cs = new ClockwiseComparer();
+        cs.current = this;
+        cs.start = this.connections[0];
+        connections.Sort(cs);
     }
-}
-
-public class ClockwiseComparer : IComparer<Node>
-{
-    private Vector2 m_Origin;
-
-    #region Properties
-
-    public Vector2 origin { get { return m_Origin; } set { m_Origin = value; } }
-
-    #endregion
-
-    /// <summary>
-    ///     Initializes a new instance of the ClockwiseComparer class.
-    /// </summary>
-    /// <param name="origin">Origin.</param>
-    public ClockwiseComparer(Vector2 origin)
+    public class ClockwiseComparer : IComparer<Node>
     {
-        m_Origin = origin;
-    }
-
-    #region IComparer Methods
-
-    /// <summary>
-    ///     Compares two objects and returns a value indicating whether one is less than, equal to, or greater than the other.
-    /// </summary>
-    /// <param name="first">First.</param>
-    /// <param name="second">Second.</param>
-    public int Compare(Node first, Node second)
-    {
-        return IsClockwise(first.point, second.point, m_Origin);
-    }
-
-    #endregion
-
-    /// <summary>
-    ///     Returns 1 if first comes before second in clockwise order.
-    ///     Returns -1 if second comes before first.
-    ///     Returns 0 if the points are identical.
-    /// </summary>
-    /// <param name="first">First.</param>
-    /// <param name="second">Second.</param>
-    /// <param name="origin">Origin.</param>
-    public static int IsClockwise(Vector2 first, Vector2 second, Vector2 origin)
-    {
-        if (first == second)
-            return 0;
-
-        Vector2 firstOffset = first - origin;
-        Vector2 secondOffset = second - origin;
-
-        float angle1 = Mathf.Atan2(firstOffset.x, firstOffset.y);
-        float angle2 = Mathf.Atan2(secondOffset.x, secondOffset.y);
-
-        if (angle1 < angle2)
-            return -1;
-
-        if (angle1 > angle2)
-            return 1;
-
-        // Check to see which point is closest
-        //return (firstOffset.sqrMagnitude < secondOffset.sqrMagnitude) ? -1 : 1;
-
-        return (firstOffset.sqrMagnitude < secondOffset.sqrMagnitude) ? -1 : 1;
+        public Node start, current;
+    
+        //returns which line starts most to the left
+    
+        public int Compare(Node x, Node y)
+        {
+            Vector3 incomingDir = Vector3.Normalize(current.point - start.point);
+    
+            float xRot = Vector3.SignedAngle(incomingDir, Vector3.Normalize(current.point - x.point), Vector3.up);
+            float yRot = Vector3.SignedAngle(incomingDir, Vector3.Normalize(current.point - y.point), Vector3.up);
+    
+            if (xRot == yRot) return 0;
+    
+            return xRot < yRot ? -1 : 1;
+        }
     }
 }

@@ -29,6 +29,8 @@ public class NodeMeshConstructor : MonoBehaviour
     internal bool meshCreated;
     internal List<Polygon> polygons = null;
 
+    private int m_nodeCounter = 0;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -50,14 +52,14 @@ public class NodeMeshConstructor : MonoBehaviour
     {
         polygons = new List<Polygon>();
 
-        int counter = 0;
+        m_nodeCounter = 0;
 
         foreach (Node node in s_nodeManager.AllNodes())
         {
             if (node.connections.Count == 0) continue;
 
             polygons.Add(PolyFromNode(node));
-            if (++counter % nodesPerStep == 0)
+            if (++m_nodeCounter % nodesPerStep == 0)
             {
                 if (timePerNode > 0) { yield return new WaitForSeconds(timePerNode); }
             }
@@ -70,13 +72,10 @@ public class NodeMeshConstructor : MonoBehaviour
     public Polygon PolyFromNode(Node node) 
     {
         //this guarantees that the connections are in a clockwise order
-        ConnectionSort cs = new ConnectionSort();
-        cs.current = node;
-        cs.start = node.connections[0];
-        node.connections.Sort(cs);
+        node.SortConnections();
 
         //creates the intial set of node lines
-        List<Line> nodeLines = GetInitialNodeLines(node);
+        List<Line> nodeLines = GetNodePolygonLines(node);
 
         if (node.connections.Count == 1)
         {
@@ -86,21 +85,20 @@ public class NodeMeshConstructor : MonoBehaviour
             Quaternion rotation = Quaternion.LookRotation(node.connections[0].point - node.point, Vector3.up);
 
             //close points
-            points[0] = nodeLines[0].a;
-            points[3] = nodeLines[nodeLines.Count - 1].b;
+            points[0] = nodeLines[^1].b;
+            points[3] = nodeLines[0].a;
 
             //middle points
-            points[1] = farPoint + (rotation * (-Vector3.right * m_roadWidth));
-            points[2] = farPoint + (rotation * (Vector3.right * m_roadWidth));
+            points[1] = farPoint + (rotation * (Vector3.right * m_roadWidth * 0.75f));
+            points[2] = farPoint + (rotation * (-Vector3.right * m_roadWidth * 0.75f));
 
             nodeLines.Add(new Line(points[0], points[1]));
             nodeLines.Add(new Line(points[1], points[2]));
             nodeLines.Add(new Line(points[2], points[3]));
         }
-        else
+        else /*if(node.connections.Count == 2)*/
         {
-            //this draws a line from the start point of the the latest line to the last point of the last line
-            Line newLine = new Line(nodeLines[2].b, nodeLines[nodeLines.Count - 3].a);
+            Line newLine = new Line(nodeLines[^1].b, nodeLines[0].a);
 
             foreach (Node conn in node.connections)
             {
@@ -119,43 +117,63 @@ public class NodeMeshConstructor : MonoBehaviour
 
         //untangling any overlapping lines in the node before adding the final connection line in
         int lineCount = nodeLines.Count;
-        for (int i = 0; i < lineCount; i++)
+        //For each line in nodeLines
+        for (int mainIdx = 0; mainIdx < lineCount; ++mainIdx)
         {
-            for (int j = i; j < lineCount; j++)
+            //Check against all other node lines after the mainIdx
+            for (int comparisonIdx = mainIdx; comparisonIdx < lineCount; ++comparisonIdx)
             {
-                if (j == i) continue;
+                if (comparisonIdx == mainIdx) continue;
 
-                if (nodeLines[i].DoesIntersect(nodeLines[j], out Vector3 intersection))
+                //If the 2 lines intersect
+                if (nodeLines[mainIdx].DoesIntersect(nodeLines[comparisonIdx], out Vector3 intersection))
                 {
-                    int m = -1;
-                    for (int k = i; k < lineCount; k++)
+                    //For each line between mainIdx and comparisonIdx
+
+                    int removedCount = 0;
+
+                    //if the first line has overlapped the last line
+                    int startIdx = mainIdx == 0 ? comparisonIdx+1 : mainIdx+1;
+                    int endIdx = mainIdx == 0 ? mainIdx : comparisonIdx;
+
+                    for (int sharedIdx = startIdx; sharedIdx != endIdx; ++sharedIdx)
                     {
-                        if (nodeLines[k] == nodeLines[i] || nodeLines[k] == nodeLines[j]) continue;
-                        if (nodeLines[k].SharesPoints(nodeLines[i]) && nodeLines[k].SharesPoints(nodeLines[j]))
-                        {
-                            m = k;
-                            break;
-                        }
+                        if (sharedIdx >= lineCount) { sharedIdx = 0; }
+                        if (sharedIdx == endIdx) { break; }
+
+                        //if (mainIdx == 0)
+                        //{
+                        //    Debug.Log("[NMC] Idx:" + sharedIdx + ", Comp:" + comparisonIdx + ", Line: " + lineCount);
+                        //}
+
+                        nodeLines.RemoveAt(sharedIdx);
+                        --lineCount;
+                        --comparisonIdx;
+                        ++removedCount;
                     }
 
-                    if (m == -1)
+                    if (removedCount == 0)
                     {
-                        Debug.Log("There's an issue here");
-                    }
-                    else
-                    {
-                        if (nodeLines[i].CloserToA(node.point)) nodeLines[i].a = intersection;
-                        else nodeLines[i].b = intersection;
+                        //Debug.Log("[NMC] Main: " + mainIdx +
+                        //    " > Comp: " + comparisonIdx +
+                        //    " > Diff = " + (comparisonIdx - mainIdx) +
+                        //    " > Removed = " + removedCount);
 
-                        if (nodeLines[j].CloserToA(node.point)) nodeLines[j].a = intersection;
-                        else nodeLines[j].b = intersection;
-
-                        nodeLines.RemoveAt(m);
-                        lineCount--;
-                        j--;
+                        //nodeLines[mainIdx].DebugDraw(Color.yellow, 300, Vector3.up, true);
+                        //nodeLines[comparisonIdx].DebugDraw(Color.orange, 300, Vector3.up, true);
                     }
+
+                    //replace the point closer to the node center, with the intersection point
+
+                    if (nodeLines[mainIdx].CloserToA(node.point)) { nodeLines[mainIdx].a = intersection; }
+                    else { nodeLines[mainIdx].b = intersection; }
+
+                    if (nodeLines[comparisonIdx].CloserToA(node.point)) { nodeLines[comparisonIdx].a = intersection; }
+                    else { nodeLines[comparisonIdx].b = intersection; }
                 }
             }
+
+            //nodeLines[mainIdx].DebugDraw(new Color(0,((1.0f/lineCount)*mainIdx),0), 300, Vector3.up * (1 + m_nodeCounter * 0.1f));
         }
 
         Polygon poly = new Polygon(nodeLines, node.point);
@@ -163,102 +181,101 @@ public class NodeMeshConstructor : MonoBehaviour
         return m_extrude ? ExtrudeNodePolygon(poly, node) : poly;
     }
 
-    private List<Line> GetInitialNodeLines(Node _node) 
+    private List<Line> GetNodePolygonLines(Node _node) 
     {
         List<Line> nodeLines = new List<Line>();
 
         foreach (Node conn in _node.connections)
         {
-            //find midpoint from node to conn
-            Vector3 farPoint = Vector3.Lerp(_node.point, conn.point, 0.5f);
-            Quaternion rotation = Quaternion.LookRotation(conn.point - _node.point, Vector3.up);
-            Vector3[] points = new Vector3[4];
-
-            //close points
-            points[0] = _node.point + (rotation * (-Vector3.right * m_roadWidth));
-            points[3] = _node.point + (rotation * (Vector3.right * m_roadWidth));
-
-            //middle points
-            points[1] = farPoint + (rotation * (-Vector3.right * m_roadWidth));
-            points[2] = farPoint + (rotation * (Vector3.right * m_roadWidth));
+            Vector3[] corners = GetNodeToConnectionPolygonCorners(_node, conn);
 
             Line[] lines = new Line[3];
 
-            lines[0] = new Line(points[0], points[1]);
-            lines[1] = new Line(points[1], points[2]);
-            lines[2] = new Line(points[2], points[3]);
+            lines[0] = new Line(corners[0], corners[1]);
+            lines[1] = new Line(corners[1], corners[2]);
+            lines[2] = new Line(corners[2], corners[3]);
 
-            if (lines[0].CircleIntersections(_node.point, m_nodeRadius, out Vector3[] iOne))
-            {
-                Vector3 point = lines[0].a;
-                if (iOne.Length == 2)
-                {
-                    if (Vector3.Distance(iOne[0], lines[0].b) < Vector3.Distance(iOne[1], lines[0].b))
-                    {
-                        point = iOne[0];
-                    }
-                    else
-                    {
-                        point = iOne[1];
-                    }
-                }
-                else point = iOne[0];
+            UpdateNodeToConnectionLine(_node, lines[0], true);
+            UpdateNodeToConnectionLine(_node, lines[2], false);
 
-                //Debug.DrawLine(lines[0].a, point, Color.red, 60);
-                lines[0].a = point;
-            }
-            else
-            {
-                Debug.Log("How come line 0 doesn't intersect the node?");
-            }
-
-            if (lines[2].CircleIntersections(_node.point, m_nodeRadius, out Vector3[] iTwo))
-            {
-                Vector3 point = lines[2].a;
-                if (iTwo.Length == 2)
-                {
-                    if (Vector3.Distance(iTwo[0], lines[1].a) < Vector3.Distance(iTwo[1], lines[1].a))
-                    {
-                        point = iTwo[0];
-                    }
-                    else
-                    {
-                        point = iTwo[1];
-                    }
-                }
-                else point = iTwo[0];
-
-                //Debug.DrawLine(point, lines[2].b, Color.magenta, 60);
-                lines[2].b = point;
-            }
-            else
-            {
-                Debug.Log("How come line 2 doesn't intersect the node?");
-            }
-
-            //this connects the last point from the previous line to the start point of this section - we add it before we add the next lines
             if (nodeLines.Count > 0)
             {
-                Line newLine = new Line(lines[2].b, nodeLines[nodeLines.Count - 3].a);
-                //This is one of 2 places where we can check if we are having issues with overlapping the corners
+                //this connects the last point from the previous segment to the start point of this section
+                Line linkingLine = new Line(nodeLines[^1].b, lines[0].a);
+                linkingLine.DebugDraw(Color.aliceBlue, 300, Vector3.up, true);
 
-                if (newLine.DoesIntersect(_node.point, conn.point, out Vector3 iPoint))
+                //Does the linkingLine overlap the centre 
+                if (linkingLine.DoesIntersect(_node.point, conn.point, out Vector3 intersectionPoint))
                 {
-                    Vector3 direction = (_node.point - Vector3.Lerp(newLine.a, newLine.b, 0.5f)).normalized;
-                    Line otherLine = new Line(newLine.a, _node.point + (direction * (m_roadWidth * 0.25f)));
-                    newLine.a = otherLine.b;
-                    nodeLines.Add(otherLine);
-                    //Debug.Log("???");
+                    Vector3 direction = (_node.point - Vector3.Lerp(linkingLine.a, linkingLine.b, 0.5f)).normalized;
+                    Line overlapFixLine = new Line(linkingLine.a, _node.point + (direction * (m_roadWidth * 0.5f)));
+                    linkingLine.a = overlapFixLine.b;
+                    nodeLines.Add(overlapFixLine);
                 }
 
-                //this draws a line from the start point to the last line
-                nodeLines.Add(newLine);
+                nodeLines.Add(linkingLine);
             }
 
             nodeLines.AddRange(lines);
         }
 
         return nodeLines;
+    }
+
+    private Vector3[] GetNodeToConnectionPolygonCorners(Node _node, Node _conn) 
+    {
+        Vector3[] corners = new Vector3[4];
+
+        //find midpoint from node to conn
+        Vector3 lineEnd = Vector3.Lerp(_node.point, _conn.point, 0.5f);
+        //get the forward rotation Node>>Point
+        Quaternion forwardRotation = Quaternion.LookRotation(_conn.point - _node.point, Vector3.up);
+
+        //Bottom Left
+        corners[0] = _node.point + (forwardRotation * (-Vector3.right * m_roadWidth));
+        //Top Left
+        corners[1] = lineEnd + (forwardRotation * (-Vector3.right * m_roadWidth));
+        //Top Right
+        corners[2] = lineEnd + (forwardRotation * (Vector3.right * m_roadWidth));
+        //Bottom Right
+        corners[3] = _node.point + (forwardRotation * (Vector3.right * m_roadWidth));
+
+        return corners;
+    }
+
+    private void UpdateNodeToConnectionLine(Node _node, Line _line, bool _updateStart = true) 
+    {
+        if (_line.CircleIntersections(_node.point, m_nodeRadius, out Vector3[] intersections))
+        {
+            Vector3 point = intersections[0];
+
+            if (intersections.Length == 2)
+            {
+                //line goes b->a = 2nd->1st intersection
+                Line intersectionLine = new Line(intersections[1], intersections[0]);
+                //is the point of the line furthest from to the center of the node, closer to the second intersection point 
+                if (intersectionLine.CloserToA(
+                    _line.CloserToA(_node.point) ? _line.b : _line.a)
+                    )
+                {
+                    point = intersections[1];
+                }
+            }
+
+            if (_updateStart)
+            {
+                _line.a = point;
+            }
+            else
+            {
+                _line.b = point;
+            }
+
+        }
+        else
+        {
+            Debug.Log("[NMC] No intersections found - line not updated");
+        }
     }
 
     private Polygon ExtrudeNodePolygon(Polygon _poly, Node _node) 
@@ -394,6 +411,7 @@ public class NodeMeshConstructor : MonoBehaviour
                     {
                         Gizmos.color = Color.cyan;
                         Gizmos.DrawLine(polygons[i].vertices[j].point, polygons[i].vertices[j - 1].point);
+                        //Handles.Label(polygons[i].vertices[j].point + (Vector3.up * j), j.ToString());
                     }
 
                     if (drawPoints) 
@@ -401,28 +419,8 @@ public class NodeMeshConstructor : MonoBehaviour
                         Gizmos.color = Color.red;
                         Gizmos.DrawSphere(polygons[i].vertices[j].point, 0.5f);
                     }
-                    //Handles.Label(polygons[i].vertices[j] + (Vector3.up * j), j.ToString());
                 }
             }
-        }
-    }
-
-    public class ConnectionSort : IComparer<Node>
-    {
-        public Node start, current;
-
-        //returns which line starts most to the left
-
-        public int Compare(Node x, Node y)
-        {
-            Vector3 incomingDir = Vector3.Normalize(current.point - start.point);
-
-            float xRot = Vector3.SignedAngle(incomingDir, Vector3.Normalize(current.point - x.point), Vector3.up);
-            float yRot = Vector3.SignedAngle(incomingDir, Vector3.Normalize(current.point - y.point), Vector3.up);
-
-            if (xRot == yRot) return 0;
-
-            return  xRot < yRot ? 1 : -1;
         }
     }
 }

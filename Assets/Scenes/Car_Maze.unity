@@ -1349,8 +1349,8 @@ MonoBehaviour:
     axiom: o
     finalString: '>f>f[ff][>ff][<<ff]'
     randomRuleOutput: 1
-  count: 3
-  angle: 30
+  count: 10
+  angle: 45
   m_length: 50
   m_nodeLimitRange:
     min: 40
@@ -1387,13 +1387,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   s_nodeManager: {fileID: 2109595310}
   m_roadWidth: 3
-  m_nodeRadius: 10
+  m_nodeRadius: 6
   m_doubleSided: 0
   m_extrude: 0
   m_extrusionDepth: -1
   drawPoints: 0
   drawPolygons: 1
-  nodesPerStep: 20
+  nodesPerStep: 100
   timePerNode: 0.01
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

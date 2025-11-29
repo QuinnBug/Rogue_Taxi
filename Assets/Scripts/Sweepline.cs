@@ -688,9 +688,18 @@ public class Line
         return true;
     }
 
-    internal void DebugDraw(Color color, float duration)
+    internal void DebugDraw(Color color, float duration, Vector3 pointOffset = new Vector3(), bool sloped = false)
     {
-        Debug.DrawLine(a, b, color, duration);
+        Vector3 pointA = a + pointOffset;
+        Vector3 pointB = b + pointOffset;
+
+        if (sloped)
+        {
+            pointA += Vector3.up * 2;
+            pointB += Vector3.up * 1;
+        }
+
+        Debug.DrawLine(pointA, pointB, color, duration);
     }
 }
 

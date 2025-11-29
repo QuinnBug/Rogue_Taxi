@@ -327,10 +327,10 @@ namespace Earclipping
 			List<Line> tempLines = new List<Line>(lines);
 			List<Vertex> points = new List<Vertex>();
 
-			if(SortLines(tempLines, out List<Line> sortedLines)) 
-			{
-				tempLines = sortedLines;
-			}
+			//if(SortLines(tempLines, out List<Line> sortedLines)) 
+			//{
+			//	tempLines = sortedLines;
+			//}
 
 			//add the first line
 			points.Add(new Vertex(tempLines[0].a));
