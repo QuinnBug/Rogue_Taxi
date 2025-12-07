@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 
 // Probably need to change this to work on nodes
@@ -373,22 +374,20 @@ public class Line
     public Vector3 b
     {
         get { return B; }
-        set 
-        { 
-            B = value;
-            UpdateType();
-        }
+        set { B = value; UpdateType(); }
     }
 
     public LineType type = LineType.REGULAR;
+    public bool m_LeftToRight { get; private set; } = true;
 
     //this updates the type and makes sure that a is leftmost or topmost based on type
     public void UpdateType() 
     {
-        if (Mathf.Abs(a.x - b.x) < 0.001f) type = LineType.VERTICAL;
-        else if (Mathf.Abs(a.z - b.z) < 0.001f) type = LineType.HORIZONTAL;
-        //else if (a.z == b.z) type = LineType.HORIZONTAL;
-        else type = LineType.REGULAR;
+        if (a.x == b.x) { type = LineType.VERTICAL; }
+        else if (a.z == b.z) { type = LineType.HORIZONTAL; }
+        else { type = LineType.REGULAR; }
+
+        m_LeftToRight = a.x < b.x;
     }
 
     public bool CloserToA(Vector3 point) 
@@ -437,16 +436,19 @@ public class Line
         //Lines should always be created with a being leftmost and b being to the right
         //However the z could be either way around
 
+        Vector3[] points = PointsLeftToRight();
+
         switch (type)
         {
             case LineType.REGULAR:
             case LineType.HORIZONTAL:
-                return ((point.x >= a.x && point.x <= b.x) || (point.x <= a.x && point.x >= b.x)) &&
-                       ((point.z >= a.z && point.z <= b.z) || (point.z <= a.z && point.z >= b.z));
+                return ((point.x >= points[0].x && point.x <= points[1].x) || (point.x <= points[0].x && point.x >= points[1].x)) &&
+                       ((point.z >= points[0].z && point.z <= points[1].z) || (point.z <= points[0].z && point.z >= points[1].z));
 
             case LineType.VERTICAL:
                 //if the lines are vertical then the x should be the same as either points x
-                return point.x == a.x && ((point.z >= a.z && point.z <= b.z) || (point.z <= a.z && point.z >= b.z));
+                return point.x == a.x && 
+                    ((point.z >= points[0].z && point.z <= points[1].z) || (point.z <= points[0].z && point.z >= points[1].z));
 
             default:
                 return false;
@@ -464,20 +466,42 @@ public class Line
 
     public float[] Equation() 
     {
-        //return {m, b}
-        float[] result = new float[] { 0, 0 };
+        float[] result;
 
-        //vertical lines can't use this calulation
-        if(type != LineType.VERTICAL)
+        //vertical lines have an undefined rise
+        if (type == LineType.VERTICAL)
         {
-            //m
-            result[0] = (b.z - a.z) / (b.x - a.x);
+            //result = {x intercept}
+            result = new float[] { a.x };
+        }
+        else
+        {
+            result = new float[] { 0, 0 };
+            //result = {rise(m), z intercept(b)}
 
-            //b
-            result[1] = a.z - (result[0] * a.x);
+            Vector3[] points = PointsLeftToRight();
+            //Vector3[] points = {a,b};
+
+            //m = slope: change in z divided by change in x
+            result[0] = (points[1].z - points[0].z) / (points[1].x - points[0].x);
+
+            //b = y intercept: z - (m * x)
+            result[1] = points[0].z - (result[0] * points[0].x);
         }
 
         return result;
+    }
+
+    private Vector3[] PointsLeftToRight() 
+    {
+        if (m_LeftToRight)
+        {
+            return new Vector3[2] { a, b };
+        }
+        else 
+        { 
+            return new Vector3[2] { b, a };
+        }
     }
 
     public void Flip()
@@ -492,9 +516,9 @@ public class Line
         return Vector3.Distance(a,b);
     }
 
-    internal bool SharesPoints(Line line)
+    internal bool SharesPoints(Line otherLine)
     {
-        return a == line.a || a == line.b || b == line.a || b == line.b;
+        return a == otherLine.a || a == otherLine.b || b == otherLine.a || b == otherLine.b;
     }
 
     internal Line SwitchPoints(Line line, bool doA) 
@@ -532,64 +556,100 @@ public class Line
 
     public bool DoesIntersect(Line lineB, out Vector3 intersection)
     {
-        intersection = a;
+        intersection = Vector3.zero;
+
         if (this == lineB)
         {
-            //this is bad
-            Debug.Log("Self Line Comparison");
+            Debug.Log("These are the same lines");
             return false;
         }
 
+        //QWN: This is where the problem is!!! for some reason 2 perpendicular lines are sharing a point
         if (SharesPoints(lineB))
         {
-            //Debug.Log("These lines share points");
+            Debug.Log("These lines share points");
+            this.DebugDraw(Color.red, 1200, Vector3.up * 4);
+            lineB.DebugDraw(Color.red, 1200, Vector3.up * 4);
             return false;
         }
 
-        //y = mx + b
+        //Horiztonal or Regular: y = mx + b
+        //Vertical: y = ? (all x values are the same)
 
         float[] equationA = Equation();
         float[] equationB = lineB.Equation();
 
-        float slopeDiff = equationA[0] - equationB[0];
-        if (Mathf.Abs(slopeDiff) <= 0.001f &&
-            (!(lineB.type == LineType.VERTICAL && type == LineType.HORIZONTAL) && !(lineB.type == LineType.HORIZONTAL && type == LineType.VERTICAL)))
-        {
-            //Debug.Log(type + " " + equationA[0] + " > " + lineB.type + " " + equationB[0]);
-            //Debug.Log("These lines are parallel");
-            return false;
-        }
-
+        //if either line is vertical
         if (type == LineType.VERTICAL || lineB.type == LineType.VERTICAL)
         {
-            Line verticalLine = type == LineType.VERTICAL ? this : lineB;
-            Line otherLine = type == LineType.VERTICAL ? lineB : this;
-
-            if (otherLine.type == LineType.HORIZONTAL)
+            //If both vertical, do a parallel check
+            if (type == LineType.VERTICAL && lineB.type == LineType.VERTICAL)
             {
-                intersection = new Vector3(verticalLine.a.x, intersection.y, otherLine.a.z);
+                float yDiff = equationA[0] - equationB[0];
+                if (Mathf.Abs(yDiff) >= 0.001f)
+                {
+                    Debug.Log("[Line] Lines are parallel - Vert");
+                    return false;
+                }
+                else
+                {
+                    Debug.Log("[Line] Lines are not parallel - Vert");
+                    intersection.x = b.x;
+                    intersection.z = equationA[0];
+                }
             }
             else
             {
-                intersection = new Vector3(verticalLine.a.x, intersection.y, otherLine.GetYAtXOnLine(verticalLine.a.x));
+                Line verticalLine = type == LineType.VERTICAL ? this : lineB;
+                Line otherLine = type == LineType.VERTICAL ? lineB : this;
+                //if the non-vert line is horizontal
+                if (otherLine.type == LineType.HORIZONTAL)
+                {
+                    Debug.Log("[Line] Lines are Perpendicular - Half Vert");
+                    intersection = new Vector3(verticalLine.a.x, intersection.y, otherLine.a.z);
+                }
+                else
+                {
+                    Debug.Log("[Line] Intersection - Half Vert");
+                    this.DebugDraw (Color.aliceBlue, 1200, Vector3.up * 2);
+                    lineB.DebugDraw(Color.aliceBlue, 1200, Vector3.up * 2);
+                    intersection = new Vector3(verticalLine.a.x, intersection.y, otherLine.GetYAtXOnLine(verticalLine.a.x));
+                }
+            }
+        }
+        else //these lines both have a rise (0 valid), and a y intersection
+        {
+            float mA = equationA[0], mB = equationB[0], c = equationA[1], d = equationB[1];
+
+            //if (a == b) the lines are parellel
+            if (mA == mB)
+            {
+                Debug.Log("[Line] Lines are parallel - Not Vert");
+                return false;
+            }
+            else
+            { 
+                Debug.Log("[Line] Intersection - Not Vert");
+                this.DebugDraw (type == LineType.HORIZONTAL ? Color.green : Color.aquamarine, 1200, Vector3.up * 3);
+                lineB.DebugDraw(lineB.type == LineType.HORIZONTAL ? Color.green : Color.aquamarine, 1200, Vector3.up * 3);
             }
 
-        }
-        else
-        {
-            intersection.x = (equationB[1] - equationA[1]) / (equationA[0] - equationB[0]);
-            intersection.z = -1 * ((equationA[1] * equationB[0] - equationB[1] * equationA[0]) / (equationA[0] - equationB[0]));
+            intersection.x = (d - c) / (mA - mB);
+            intersection.y = a.y;
+            intersection.z = (mA * intersection.x) + c;
+
+            Debug.Log("Intersection = " + intersection 
+                + "| a = " + mA
+                + "| b = " + mB
+                + "| c = " + c
+                + "| d = " + d
+                );
+            Debug.DrawLine(intersection - Vector3.up * 3, intersection + Vector3.up * 3, Color.darkGoldenRod, 1200);
         }
 
-
-        //if the intersection is not within the range of either line then return false;
-        if (!Contains(intersection) || !lineB.Contains(intersection))
-        {
-            return false;
-        }
-
-        //we got through all the checks! that means we found an intersection in range
-        return true;
+        //if the both lines contains the intersection, then the lines do intersect (true)
+        //if only one or neither contain the intersection, then they "Could" intersect but currently do not (false)
+        return Contains(intersection) && lineB.Contains(intersection);
     }
 
     public bool CircleIntersections(Vector3 circle, float r, out Vector3[] intersections) 

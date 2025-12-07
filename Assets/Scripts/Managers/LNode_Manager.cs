@@ -7,6 +7,7 @@ using Random = UnityEngine.Random;
 using NodeList = System.Collections.Generic.List<Node>;
 using NodeMap = System.Collections.Generic.Dictionary<UnityEngine.Vector2Int, System.Collections.Generic.List<Node>>;
 using UnityEditor.Experimental.GraphView;
+using UnityEditor;
 
 /// <summary>
 /// Uses an L system to generate a sequence of roads, and then creates a mesh for each of them
@@ -15,6 +16,7 @@ public class LNode_Manager : Singleton<LNode_Manager>
 {
     public bool showConnections = false;
     public bool showNodes = false;
+    public bool showLabels = false;
     [Space]
     public LSystem lSys = new LSystem();
     public int count = 5;
@@ -116,22 +118,28 @@ public class LNode_Manager : Singleton<LNode_Manager>
             }
         }
 
-        Debug.Log("[LNM] Sequence Plotted - Starting Untangling of intersections");
+        Debug.Log("[LNM] Sequence Plotted - Starting Untangle");
 
         //sort each nodes connections
-        counter = 0;
-        foreach (NodeList nodeList in m_nodeMap.Values) 
+        bool stillTangled = false;
+        do
         {
-            foreach (Node item in nodeList)
+            if (stillTangled) { Debug.Log("[LNM] Rechecking Tangles"); }
+            stillTangled = false;
+            counter = 0;
+            foreach (NodeList nodeList in m_nodeMap.Values)
             {
-                UntangleNode(item);
-
-                if (++counter % nodesPerStep == 0)
+                foreach (Node item in nodeList)
                 {
-                    if (timePerStep > 0) { yield return new WaitForSeconds(timePerStep);}
+                    stillTangled |= UntangleNode(item);
+
+                    if (++counter % nodesPerStep == 0)
+                    {
+                        if (timePerStep > 0) { yield return new WaitForSeconds(timePerStep); }
+                    }
                 }
             }
-        }
+        } while (stillTangled);
 
         Debug.Log("[LNM] Nodes Untangled - Generation complete (Node Count = " + counter + ")");
 
@@ -168,10 +176,13 @@ public class LNode_Manager : Singleton<LNode_Manager>
         return nodeAtPosition;
     }
 
-    private void UntangleNode(Node focusNode)
+    private bool UntangleNode(Node focusNode)
     {
+        bool didUntangle = false;
+
         //Untangle any connection crossovers
-        List<Node> nodesInRange = GetNodesInRange(focusNode.point, (int)Math.Ceiling(m_nodeLimitRange.max) + 1);
+
+        NodeList nodesInRange = GetNodesInRange(focusNode.point, 2);
 
         for (int c = 0; c < focusNode.connections.Count; ++c)
         {
@@ -184,6 +195,8 @@ public class LNode_Manager : Singleton<LNode_Manager>
 
                 if (TestConnectionIntersectionsWithLine(focusNode, connectedNode, checkingNode, out Node intersectedNode))
                 {
+                    didUntangle = true;
+
                     focusNode.RemoveConnection(connectedNode);
                     checkingNode.RemoveConnection(intersectedNode);
 
@@ -193,13 +206,18 @@ public class LNode_Manager : Singleton<LNode_Manager>
                     connectedNode.AddConnection(checkingNode);
                     connectedNode.AddConnection(intersectedNode);
 
-                    --c;
+                    //new Line(focusNode.point,   checkingNode.point   ).DebugDraw(Color.green    , 1200, Vector3.up * 2, true);
+                    //new Line(focusNode.point,   intersectedNode.point).DebugDraw(Color.purple   , 1200, Vector3.up * 2, true);
+                    //new Line(checkingNode.point,intersectedNode.point).DebugDraw(Color.red      , 1200, Vector3.up);
+                    //new Line(focusNode.point,   connectedNode.point  ).DebugDraw(Color.orangeRed, 1200, Vector3.up);
+
+                    c = 0;
                     break;
                 }
             }
         }
 
-        
+        return didUntangle;
     }
 
     public void ValueClamps(bool _forceUpdate = false) 
@@ -220,6 +238,8 @@ public class LNode_Manager : Singleton<LNode_Manager>
         Line lineToParent = new Line(_startNode.point, _endNode.point);
         Line lineBetweenConnections = new Line(_checkNode.point, Vector3.zero);
 
+        lineToParent.DebugDraw(Color.pink, 1200, Vector3.up);
+
         _intersectedNode = _checkNode.connections[0];
         for (int i = 0; i < _checkNode.connections.Count; ++i)
         {
@@ -230,6 +250,8 @@ public class LNode_Manager : Singleton<LNode_Manager>
 
             if (lineToParent.DoesIntersect(lineBetweenConnections, out Vector3 intersection))
             {
+                lineToParent.DebugDraw(Color.red, 500, Vector3.up);
+                lineBetweenConnections.DebugDraw(Color.navyBlue, 500, Vector3.up);
                 return true;
             }
         }
@@ -239,7 +261,10 @@ public class LNode_Manager : Singleton<LNode_Manager>
 
     public Vector2Int WorldPosToMapKey(Vector3 _position)
     {
-        return new Vector2Int((int)Mathf.Floor(_position.x), (int)Mathf.Floor(_position.z));
+        return new Vector2Int(
+            Mathf.FloorToInt(_position.x / m_nodeLimitRange.max),
+            Mathf.FloorToInt(_position.z / m_nodeLimitRange.max)
+            );
     }
 
     public NodeList GetNodesInRange(Vector3 _position, int _range) 
@@ -293,8 +318,13 @@ public class LNode_Manager : Singleton<LNode_Manager>
                 {
                     if (showNodes)
                     {
-                        Gizmos.color = Color.red;
-                        Gizmos.DrawSphere(item.point, m_length / 10.0f);
+                        Gizmos.color = Color.blue;
+                        Gizmos.DrawSphere(item.point, m_length / 15.0f);
+                    }
+
+                    if (showLabels)
+                    {
+                        Handles.Label(item.point + (Vector3.forward * m_length/10.0f), WorldPosToMapKey(item.point).ToString());
                     }
 
                     if (showConnections)
@@ -338,10 +368,10 @@ public class Node
 
         if (node == this || connections.Contains(node) || Vector3.Distance(point, node.point) >= LNode_Manager.Instance.m_nodeLimitRange.max)
         {
-            if (Vector3.Distance(point, node.point) >= LNode_Manager.Instance.m_nodeLimitRange.max)
-            {
-                Debug.DrawLine(point, node.point, Color.purple, 300);
-            }
+            //if (Vector3.Distance(point, node.point) >= LNode_Manager.Instance.m_nodeLimitRange.max)
+            //{
+            //    Debug.DrawLine(point, node.point, Color.purple, 300);
+            //}
             return;
         }
         else
