@@ -238,20 +238,19 @@ public class LNode_Manager : Singleton<LNode_Manager>
         Line lineToParent = new Line(_startNode.point, _endNode.point);
         Line lineBetweenConnections = new Line(_checkNode.point, Vector3.zero);
 
-        lineToParent.DebugDraw(Color.pink, 1200, Vector3.up);
-
         _intersectedNode = _checkNode.connections[0];
         for (int i = 0; i < _checkNode.connections.Count; ++i)
         {
-            if (_intersectedNode == _endNode || _intersectedNode == _startNode) { continue; }
+            //if (_intersectedNode == _startNode) { continue; }
+
             _intersectedNode = _checkNode.connections[i];
 
             lineBetweenConnections.b = _intersectedNode.point;
 
             if (lineToParent.DoesIntersect(lineBetweenConnections, out Vector3 intersection))
             {
-                lineToParent.DebugDraw(Color.red, 500, Vector3.up);
-                lineBetweenConnections.DebugDraw(Color.navyBlue, 500, Vector3.up);
+                //lineToParent.DebugDraw(Color.red, 500, Vector3.up);
+                //lineBetweenConnections.DebugDraw(Color.navyBlue, 500, Vector3.up);
                 return true;
             }
         }
@@ -274,9 +273,9 @@ public class LNode_Manager : Singleton<LNode_Manager>
         Vector2Int centralKey = WorldPosToMapKey(_position);
         Vector2Int rangeKey = new Vector2Int(0,0);
 
-        for (int x = -_range; x < _range; ++x)
+        for (int x = -_range; x <= _range; ++x)
         {
-            for (int y = -_range; y < _range; ++y)
+            for (int y = -_range; y <= _range; ++y)
             {
                 rangeKey.x = centralKey.x + x;
                 rangeKey.y = centralKey.y + y;

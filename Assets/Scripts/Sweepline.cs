@@ -383,11 +383,11 @@ public class Line
     //this updates the type and makes sure that a is leftmost or topmost based on type
     public void UpdateType() 
     {
-        if (a.x == b.x) { type = LineType.VERTICAL; }
-        else if (a.z == b.z) { type = LineType.HORIZONTAL; }
-        else { type = LineType.REGULAR; }
+        if (FloatingComparison(A.x, B.x)){ type = LineType.VERTICAL; }
+        else if (FloatingComparison(A.z, B.z)) { type = LineType.HORIZONTAL;} 
+        else { type = LineType.REGULAR;}
 
-        m_LeftToRight = a.x < b.x;
+        m_LeftToRight = A.x < B.x;
     }
 
     public bool CloserToA(Vector3 point) 
@@ -433,9 +433,6 @@ public class Line
 
     public bool Contains(Vector3 point)
     {
-        //Lines should always be created with a being leftmost and b being to the right
-        //However the z could be either way around
-
         Vector3[] points = PointsLeftToRight();
 
         switch (type)
@@ -557,19 +554,26 @@ public class Line
     public bool DoesIntersect(Line lineB, out Vector3 intersection)
     {
         intersection = Vector3.zero;
+        intersection.y = lineB.a.y;
+
+        //Debug.Log("Lines: " + type.ToString() + " >< " + lineB.type.ToString());
+
+        //if (type == LineType.REGULAR)
+        //{
+        //    this.DebugDraw(Color.red, 1200, Vector3.up * -1);
+        //    lineB.DebugDraw(Color.red, 1200, Vector3.up * -1);
+        //}
 
         if (this == lineB)
         {
-            Debug.Log("These are the same lines");
+            //Debug.Log("These are the same lines");
             return false;
         }
 
-        //QWN: This is where the problem is!!! for some reason 2 perpendicular lines are sharing a point
+        //QWN: This highlights a problem !!!
         if (SharesPoints(lineB))
         {
-            Debug.Log("These lines share points");
-            this.DebugDraw(Color.red, 1200, Vector3.up * 4);
-            lineB.DebugDraw(Color.red, 1200, Vector3.up * 4);
+            //Debug.Log("These lines share points");
             return false;
         }
 
@@ -588,12 +592,12 @@ public class Line
                 float yDiff = equationA[0] - equationB[0];
                 if (Mathf.Abs(yDiff) >= 0.001f)
                 {
-                    Debug.Log("[Line] Lines are parallel - Vert");
+                    //Debug.Log("[Line] Lines are parallel - Vert");
                     return false;
                 }
                 else
                 {
-                    Debug.Log("[Line] Lines are not parallel - Vert");
+                    //Debug.Log("[Line] Lines are not parallel - Vert");
                     intersection.x = b.x;
                     intersection.z = equationA[0];
                 }
@@ -605,14 +609,14 @@ public class Line
                 //if the non-vert line is horizontal
                 if (otherLine.type == LineType.HORIZONTAL)
                 {
-                    Debug.Log("[Line] Lines are Perpendicular - Half Vert");
+                    //Debug.Log("[Line] Lines are Perpendicular - Half Vert");
                     intersection = new Vector3(verticalLine.a.x, intersection.y, otherLine.a.z);
                 }
                 else
                 {
-                    Debug.Log("[Line] Intersection - Half Vert");
-                    this.DebugDraw (Color.aliceBlue, 1200, Vector3.up * 2);
-                    lineB.DebugDraw(Color.aliceBlue, 1200, Vector3.up * 2);
+                    //Debug.Log("[Line] Intersection - Half Vert");
+                    //this.DebugDraw (Color.aliceBlue, 1200, Vector3.up * 2);
+                    //lineB.DebugDraw(Color.aliceBlue, 1200, Vector3.up * 2);
                     intersection = new Vector3(verticalLine.a.x, intersection.y, otherLine.GetYAtXOnLine(verticalLine.a.x));
                 }
             }
@@ -624,27 +628,27 @@ public class Line
             //if (a == b) the lines are parellel
             if (mA == mB)
             {
-                Debug.Log("[Line] Lines are parallel - Not Vert");
+                //Debug.Log("[Line] Lines are parallel - Not Vert");
                 return false;
             }
             else
-            { 
-                Debug.Log("[Line] Intersection - Not Vert");
-                this.DebugDraw (type == LineType.HORIZONTAL ? Color.green : Color.aquamarine, 1200, Vector3.up * 3);
-                lineB.DebugDraw(lineB.type == LineType.HORIZONTAL ? Color.green : Color.aquamarine, 1200, Vector3.up * 3);
+            {
+                //Debug.Log("[Line] Intersection - Not Vert");
+                //this.DebugDraw(Color.aquamarine, 1200, Vector3.up * 4);
+                //lineB.DebugDraw(Color.aquamarine, 1200, Vector3.up * 4);
             }
 
             intersection.x = (d - c) / (mA - mB);
             intersection.y = a.y;
             intersection.z = (mA * intersection.x) + c;
 
-            Debug.Log("Intersection = " + intersection 
-                + "| a = " + mA
-                + "| b = " + mB
-                + "| c = " + c
-                + "| d = " + d
-                );
-            Debug.DrawLine(intersection - Vector3.up * 3, intersection + Vector3.up * 3, Color.darkGoldenRod, 1200);
+            //Debug.Log("Intersection = " + intersection 
+            //    + "| a = " + mA
+            //    + "| b = " + mB
+            //    + "| c = " + c
+            //    + "| d = " + d
+            //    );
+            //Debug.DrawLine(intersection - Vector3.up * 3, intersection + Vector3.up * 3, Color.white, 1200);
         }
 
         //if the both lines contains the intersection, then the lines do intersect (true)
@@ -658,8 +662,8 @@ public class Line
         List<Vector3> iPoints = new List<Vector3>();
 
         float m, c;
-        m = Equation()[0];
-        c = Equation()[1];
+        m = type == LineType.VERTICAL ? 0 : Equation()[0];
+        c = type == LineType.VERTICAL ? Equation()[0] : Equation()[1];
 
         float x, z, m_A, m_B, m_C, m_D, p, q;
         p = circle.x;
@@ -746,6 +750,11 @@ public class Line
 
         intersections = iPoints.ToArray();
         return true;
+    }
+
+    private bool FloatingComparison(float n, float m) 
+    {
+        return Mathf.Abs(n - m) <= 0.001f;
     }
 
     internal void DebugDraw(Color color, float duration, Vector3 pointOffset = new Vector3(), bool sloped = false)

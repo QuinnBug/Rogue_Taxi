@@ -96,7 +96,7 @@ public class NodeMeshConstructor : MonoBehaviour
             nodeLines.Add(new Line(points[1], points[2]));
             nodeLines.Add(new Line(points[2], points[3]));
         }
-        else /*if(node.connections.Count == 2)*/
+        else
         {
             Line newLine = new Line(nodeLines[^1].b, nodeLines[0].a);
 
@@ -126,50 +126,50 @@ public class NodeMeshConstructor : MonoBehaviour
                 if (comparisonIdx == mainIdx) continue;
 
                 //If the 2 lines intersect
-                if (nodeLines[mainIdx].DoesIntersect(nodeLines[comparisonIdx], out Vector3 intersection))
+                while (nodeLines[mainIdx].DoesIntersect(nodeLines[comparisonIdx], out Vector3 intersection))
                 {
                     //For each line between mainIdx and comparisonIdx
 
                     int removedCount = 0;
 
                     //if the first line has overlapped the last line
-                    int startIdx = mainIdx == 0 ? comparisonIdx+1 : mainIdx+1;
+                    int startIdx = mainIdx == 0 ? comparisonIdx : mainIdx;
                     int endIdx = mainIdx == 0 ? mainIdx : comparisonIdx;
+                    int removalIdx = startIdx + 1;
+                    int totalLoops = Mathf.Abs(comparisonIdx - mainIdx);
 
-                    for (int sharedIdx = startIdx; sharedIdx != endIdx; ++sharedIdx)
+                    for (int loop = 0; loop <= totalLoops; ++loop)
                     {
-                        if (sharedIdx >= lineCount) { sharedIdx = 0; }
-                        if (sharedIdx == endIdx) { break; }
+                        if (removalIdx >= nodeLines.Count)
+                        {
+                            //Debug.Log("[NMC] LOOPING");
+                            removalIdx = 0;
+                        }
+                        if (removalIdx == endIdx) { break; }
 
-                        //if (mainIdx == 0)
-                        //{
-                        //    Debug.Log("[NMC] Idx:" + sharedIdx + ", Comp:" + comparisonIdx + ", Line: " + lineCount);
-                        //}
-
-                        nodeLines.RemoveAt(sharedIdx);
+                        //QWN : Here's the next problem...
+                        //Debug.Log("[NMC] Idx:" + removalIdx + ", nodeLines: " + nodeLines.Count);
+                        nodeLines.RemoveAt(removalIdx);
                         --lineCount;
-                        --comparisonIdx;
+                        //--comparisonIdx;
                         ++removedCount;
                     }
 
-                    if (removedCount == 0)
+                    if (removedCount == 0) 
                     {
-                        //Debug.Log("[NMC] Main: " + mainIdx +
-                        //    " > Comp: " + comparisonIdx +
-                        //    " > Diff = " + (comparisonIdx - mainIdx) +
-                        //    " > Removed = " + removedCount);
+                        //replace the point closer to the node center, with the intersection point
+                        if (nodeLines[mainIdx].CloserToA(node.point)) { nodeLines[mainIdx].a = intersection; }
+                        else { nodeLines[mainIdx].b = intersection; }
 
-                        //nodeLines[mainIdx].DebugDraw(Color.yellow, 300, Vector3.up, true);
-                        //nodeLines[comparisonIdx].DebugDraw(Color.orange, 300, Vector3.up, true);
+                        if (nodeLines[comparisonIdx].CloserToA(node.point)) { nodeLines[comparisonIdx].a = intersection; }
+                        else { nodeLines[comparisonIdx].b = intersection; }
+
+                        //Debug.Log("[NMC] -- Removal complete --");
                     }
-
-                    //replace the point closer to the node center, with the intersection point
-
-                    if (nodeLines[mainIdx].CloserToA(node.point)) { nodeLines[mainIdx].a = intersection; }
-                    else { nodeLines[mainIdx].b = intersection; }
-
-                    if (nodeLines[comparisonIdx].CloserToA(node.point)) { nodeLines[comparisonIdx].a = intersection; }
-                    else { nodeLines[comparisonIdx].b = intersection; }
+                    else
+                    {
+                        Debug.Log("[NMC] Beep:" + comparisonIdx + "/" + nodeLines.Count);
+                    }
                 }
             }
 
@@ -202,7 +202,6 @@ public class NodeMeshConstructor : MonoBehaviour
             {
                 //this connects the last point from the previous segment to the start point of this section
                 Line linkingLine = new Line(nodeLines[^1].b, lines[0].a);
-                linkingLine.DebugDraw(Color.aliceBlue, 300, Vector3.up, true);
 
                 //Does the linkingLine overlap the centre 
                 if (linkingLine.DoesIntersect(_node.point, conn.point, out Vector3 intersectionPoint))
@@ -270,7 +269,6 @@ public class NodeMeshConstructor : MonoBehaviour
             {
                 _line.b = point;
             }
-
         }
         else
         {
@@ -411,7 +409,7 @@ public class NodeMeshConstructor : MonoBehaviour
                     {
                         Gizmos.color = Color.cyan;
                         Gizmos.DrawLine(polygons[i].vertices[j].point, polygons[i].vertices[j - 1].point);
-                        //Handles.Label(polygons[i].vertices[j].point + (Vector3.up * j), j.ToString());
+                        Handles.Label(polygons[i].vertices[j].point + (Vector3.up * i * 2), j.ToString());
                     }
 
                     if (drawPoints) 
