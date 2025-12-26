@@ -743,7 +743,7 @@ public class Line
             else
             {
                 Debug.Log("regular none " + m_D);
-                Debug.DrawLine(a, b, Color.red, 120);
+                DebugDraw(Color.red, 3000, Vector3.up);
                 return false;
             }
         }

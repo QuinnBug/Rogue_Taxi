@@ -1347,10 +1347,10 @@ MonoBehaviour:
       outputs:
       - lo
       - ro
-    axiom: '[f]>[f]>[f]>[f]'
-    finalString: '[f]>[f]>[f]>[f]'
+    axiom: o
+    finalString: '[f]>[f]>[f]>[f]>[f]>[f]>[f]>f>>f>>f>f>f>f'
     randomRuleOutput: 1
-  count: 15
+  count: 20
   angle: 45
   m_length: 50
   m_nodeLimitRange:
@@ -1358,7 +1358,7 @@ MonoBehaviour:
     max: 110
   clampValues: 0
   nodesPerStep: 200
-  timePerStep: 0
+  timePerStep: 0.01
 --- !u!4 &2109595311
 Transform:
   m_ObjectHideFlags: 0
@@ -1386,16 +1386,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83e7b09b4b007a84493a949705dd8ab8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  db_run: 0
+  db_nodesPerStep: 100
+  db_timePerNode: 1
+  db_drawPoints: 0
+  db_drawPolygons: 1
   s_nodeManager: {fileID: 2109595310}
   m_roadWidth: 3
   m_nodeRadius: 6
   m_doubleSided: 0
   m_extrude: 0
   m_extrusionDepth: -1
-  drawPoints: 0
-  drawPolygons: 1
-  nodesPerStep: 100
-  timePerNode: 0.01
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
