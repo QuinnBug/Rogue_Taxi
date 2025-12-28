@@ -313,25 +313,23 @@ public class LNode_Manager : Singleton<LNode_Manager>
         {
             foreach (NodeList nodeList in m_nodeMap.Values)
             {
-                foreach (Node item in nodeList)
+                foreach (Node node in nodeList)
                 {
                     if (showNodes)
                     {
-                        Gizmos.color = Color.blue;
-                        Gizmos.DrawSphere(item.point, m_length / 15.0f);
-                    }
-
-                    if (showLabels)
-                    {
-                        Handles.Label(item.point + (Vector3.forward * m_length/10.0f), WorldPosToMapKey(item.point).ToString());
+                        Gizmos.color = new Color(0, 0, 1, 0.25f);
+                        Gizmos.DrawSphere(node.point, m_length / 15.0f);
                     }
 
                     if (showConnections)
                     {
-                        foreach (Node node in item.connections)
+                        int i = 0;
+                        foreach (Node conn in node.connections)
                         {
                             Gizmos.color = Color.blue;
-                            Gizmos.DrawLine(item.point, item.point + ((node.point - item.point) * 0.5f));
+                            Gizmos.DrawLine(node.point, node.point + ((conn.point - node.point) * 0.5f));
+                            if (showLabels) {Handles.Label(node.point + ((conn.point - node.point) * 0.25f), i.ToString());}
+                            ++i;
                         }
                     }
                 }

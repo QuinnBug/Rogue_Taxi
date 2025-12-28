@@ -1347,17 +1347,17 @@ MonoBehaviour:
       outputs:
       - lo
       - ro
-    axiom: 'f[ffff[<<ffflt]<ff[rt]]<ff[>>ffffrt]>ff[rt]'
+    axiom: o
     finalString: 'f[ffff[<<ffflt]<ff[rt]]<ff[>>ffffrt]>ff[rt]'
     randomRuleOutput: 1
-  count: 0
-  angle: 45
-  m_length: 50
+  count: 15
+  angle: 100
+  m_length: 100
   m_nodeLimitRange:
-    min: 25
-    max: 110
+    min: 80
+    max: 210
   clampValues: 0
-  nodesPerStep: 200
+  nodesPerStep: 100
   timePerStep: 0.01
 --- !u!4 &2109595311
 Transform:
@@ -1387,13 +1387,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   db_run: 1
-  db_nodesPerStep: 100
-  db_timePerNode: 1
-  db_drawPoints: 0
+  db_nodesPerStep: 200
+  db_timePerNode: 0.01
   db_drawPolygons: 1
+  db_focusedPolyIdx: 0
+  db_drawPoints: 0
   s_nodeManager: {fileID: 2109595310}
   m_roadWidth: 3
-  m_nodeRadius: 6
+  m_nodeRadius: 8
   m_doubleSided: 0
   m_extrude: 0
   m_extrusionDepth: -1

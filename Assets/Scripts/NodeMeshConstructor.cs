@@ -17,8 +17,10 @@ public class NodeMeshConstructor : MonoBehaviour
     public int db_nodesPerStep = 50;
     public float db_timePerNode;
     [Space]
-    public bool db_drawPoints;
     public bool db_drawPolygons;
+    [UnityEngine.Range(0,200)]
+    public int db_focusedPolyIdx = 0;
+    public bool db_drawPoints;
 
     [Header("Values")]
     public LNode_Manager s_nodeManager;
@@ -106,7 +108,7 @@ public class NodeMeshConstructor : MonoBehaviour
         }
         else
         {
-            Line newLine = new Line(nodeLines[^1].b, nodeLines[0].a);
+            Line newLine = new Line(nodeLines[0].a, nodeLines[^1].b);
 
             foreach (Node conn in node.connections)
             {
@@ -147,29 +149,30 @@ public class NodeMeshConstructor : MonoBehaviour
                     int removalIdx = startIdx + 1;
                     int totalLoops = Mathf.Abs(startIdx - endIdx) - 1;
 
-                    for (int loop = 0; loop < totalLoops; ++loop)
+                    if (removalIdx < nodeLines.Count)
                     {
-                        if (mainIdx == 0)
+                        for (int loop = 0; loop < totalLoops; ++loop)
                         {
-                            Debug.Log("[NMC] 0 Intersect: " + comparisonIdx + " | " + removalIdx + "/" + nodeLines.Count);
-                        }
-                        if (removalIdx >= nodeLines.Count)
-                        {
-                            break;
-                        }
+                            nodeLines.RemoveAt(removalIdx);
+                            --lineCount;
+                            ++removedCount;
+                            if (mainIdx != 0) { --comparisonIdx;}
 
-                        nodeLines.RemoveAt(removalIdx);
-                        --lineCount;
-                        --comparisonIdx;
-                        ++removedCount;
+                            if (removalIdx >= nodeLines.Count || removalIdx == comparisonIdx)
+                            {   
+                                break;
+                            }
+                        }
                     }
 
                     //replace the point closer to the node center, with the intersection point
                     if (nodeLines[mainIdx].CloserToA(node.point)) { nodeLines[mainIdx].a = intersection; }
                     else { nodeLines[mainIdx].b = intersection; }
+                    //nodeLines[mainIdx].DebugDraw(Color.red, 100, Vector3.up, true);
 
                     if (nodeLines[comparisonIdx].CloserToA(node.point)) { nodeLines[comparisonIdx].a = intersection; }
                     else { nodeLines[comparisonIdx].b = intersection; }
+                    //nodeLines[comparisonIdx].DebugDraw(Color.purple, 100, Vector3.up, true);
 
                     //Debug checks
                     if (nodeLines[mainIdx].DoesIntersect(nodeLines[comparisonIdx], out Vector3 _)) 
@@ -180,8 +183,6 @@ public class NodeMeshConstructor : MonoBehaviour
                     }
                 }
             }
-
-            //nodeLines[mainIdx].DebugDraw(new Color(0,((1.0f/lineCount)*mainIdx),0), 300, Vector3.up * (1 + m_nodeCounter * 0.1f));
         }
         
 
@@ -422,9 +423,13 @@ public class NodeMeshConstructor : MonoBehaviour
 
                     if (db_drawPoints) 
                     {
-                        Gizmos.color = Color.red;
-                        Gizmos.DrawSphere(polygons[i].vertices[j].point, 0.5f);
-                        Handles.Label(polygons[i].vertices[j].point + (Vector3.up * i * 2), j.ToString());
+                        Gizmos.color = new Color(1, 0, 0, 0.1f);
+                        Gizmos.DrawSphere(polygons[i].vertices[j].point, 0.2f);
+
+                        if (db_focusedPolyIdx == i)
+                        {
+                            Handles.Label(polygons[i].vertices[j].point + (Vector3.up * 0.1f * (j+1)), j.ToString());
+                        }
                     }
                 }
             }

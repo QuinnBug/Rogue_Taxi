@@ -322,15 +322,8 @@ namespace Earclipping
 
 		public Polygon(List<Line> nodeLines, Vector3 _center)
 		{
-			lines = nodeLines.ToArray();
-
-			List<Line> tempLines = new List<Line>(lines);
+			List<Line> tempLines = new List<Line>(nodeLines);
 			List<Vertex> points = new List<Vertex>();
-
-			//if(SortLines(tempLines, out List<Line> sortedLines)) 
-			//{
-			//	tempLines = sortedLines;
-			//}
 
 			//add the first line
 			points.Add(new Vertex(tempLines[0].a));
