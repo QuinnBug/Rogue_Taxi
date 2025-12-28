@@ -1320,7 +1320,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   showConnections: 1
-  showNodes: 1
+  showNodes: 0
   showLabels: 0
   lSys:
     rules:
@@ -1347,10 +1347,10 @@ MonoBehaviour:
       outputs:
       - lo
       - ro
-    axiom: o
-    finalString: '[f]>[f]>[f]>[f]>[f]>[f]>[f]>f>>f>>f>f>f>f'
+    axiom: 'f[ffff[<<ffflt]<ff[rt]]<ff[>>ffffrt]>ff[rt]'
+    finalString: 'f[ffff[<<ffflt]<ff[rt]]<ff[>>ffffrt]>ff[rt]'
     randomRuleOutput: 1
-  count: 20
+  count: 0
   angle: 45
   m_length: 50
   m_nodeLimitRange:
@@ -1386,7 +1386,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83e7b09b4b007a84493a949705dd8ab8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  db_run: 0
+  db_run: 1
   db_nodesPerStep: 100
   db_timePerNode: 1
   db_drawPoints: 0

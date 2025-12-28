@@ -48,9 +48,9 @@ public class NodeMeshConstructor : MonoBehaviour
     {
         if (db_run) 
         { 
-            db_run = false;
             if (s_nodeManager.nodeGenDone && polygons == null && !meshCreated)
             {
+                db_run = false;
                 StartCoroutine(CreatePolygonFromNodes());
             }
         }
@@ -149,36 +149,32 @@ public class NodeMeshConstructor : MonoBehaviour
 
                     for (int loop = 0; loop < totalLoops; ++loop)
                     {
+                        if (mainIdx == 0)
+                        {
+                            Debug.Log("[NMC] 0 Intersect: " + comparisonIdx + " | " + removalIdx + "/" + nodeLines.Count);
+                        }
                         if (removalIdx >= nodeLines.Count)
                         {
-                            //Debug.Log("[NMC] LOOPING");
-                            removalIdx = 0;
+                            break;
                         }
-                        if (removalIdx == endIdx) { break; }
 
-                        //Debug.Log("[NMC] Idx:" + removalIdx + " : " + loop + "/" + totalLoops);
-                        //nodeLines[removalIdx].DebugDraw(Color.red, 300, Vector3.up);
                         nodeLines.RemoveAt(removalIdx);
                         --lineCount;
                         --comparisonIdx;
                         ++removedCount;
                     }
 
-                    //Debug.Log("[NMC] Beep:" + removedCount);
-                    
+                    //replace the point closer to the node center, with the intersection point
+                    if (nodeLines[mainIdx].CloserToA(node.point)) { nodeLines[mainIdx].a = intersection; }
+                    else { nodeLines[mainIdx].b = intersection; }
 
-                    if (removedCount != 0) 
-                    {
-                        //replace the point closer to the node center, with the intersection point
-                        if (nodeLines[mainIdx].CloserToA(node.point)) { nodeLines[mainIdx].a = intersection; }
-                        else { nodeLines[mainIdx].b = intersection; }
+                    if (nodeLines[comparisonIdx].CloserToA(node.point)) { nodeLines[comparisonIdx].a = intersection; }
+                    else { nodeLines[comparisonIdx].b = intersection; }
 
-                        if (nodeLines[comparisonIdx].CloserToA(node.point)) { nodeLines[comparisonIdx].a = intersection; }
-                        else { nodeLines[comparisonIdx].b = intersection; }
-                    }
-
+                    //Debug checks
                     if (nodeLines[mainIdx].DoesIntersect(nodeLines[comparisonIdx], out Vector3 _)) 
                     {
+                        Debug.DrawLine(intersection + Vector3.down, intersection + Vector3.up, Color.red, 300);
                         nodeLines[mainIdx].DebugDraw(Color.green, 300, Vector3.up * 0.5f);
                         nodeLines[comparisonIdx].DebugDraw(Color.yellow, 300, Vector3.up * 0.5f);
                     }
@@ -422,13 +418,13 @@ public class NodeMeshConstructor : MonoBehaviour
                     {
                         Gizmos.color = Color.cyan;
                         Gizmos.DrawLine(polygons[i].vertices[j].point, polygons[i].vertices[j - 1].point);
-                        //Handles.Label(polygons[i].vertices[j].point + (Vector3.up * i * 2), j.ToString());
                     }
 
                     if (db_drawPoints) 
                     {
                         Gizmos.color = Color.red;
                         Gizmos.DrawSphere(polygons[i].vertices[j].point, 0.5f);
+                        Handles.Label(polygons[i].vertices[j].point + (Vector3.up * i * 2), j.ToString());
                     }
                 }
             }
