@@ -40,7 +40,7 @@ public class MeshBuilder : MonoBehaviour
         {
             spawnMesh = false;
             CreateRoads();
-            BuildingPopulator.Instance.spawnBuildings = true;
+            //BuildingPopulator.Instance.spawnBuildings = true;
         }
     }
 

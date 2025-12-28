@@ -36,11 +36,6 @@ public class Car_Movement : MonoBehaviour
             Movement();
             Rotation();
         }
-
-        if (rb.linearVelocity.sqrMagnitude >= 0.1f)
-        {
-            //Rotation();
-        }
     }
 
     public void Movement() 
