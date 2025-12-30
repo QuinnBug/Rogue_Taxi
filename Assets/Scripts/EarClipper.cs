@@ -166,14 +166,14 @@ namespace Earclipping
 				IsVertexEar(earVertexNext, vertices, earVertices, poly);
 			}
 
-			int d = 0;
-			foreach (var tri in triangles)
-			{
-				Debug.DrawLine(tri.vertices[0] + Vector3.up * d, tri.vertices[1] + Vector3.up * d, Color.red, 300);
-				Debug.DrawLine(tri.vertices[1] + Vector3.up * d, tri.vertices[2] + Vector3.up * d, Color.blue, 300);
-				Debug.DrawLine(tri.vertices[2] + Vector3.up * d, tri.vertices[0] + Vector3.up * d, Color.green, 300);
-				++d;
-			}
+			//int d = 0;
+			//foreach (var tri in triangles)
+			//{
+			//	Debug.DrawLine(tri.vertices[0] + Vector3.up * d, tri.vertices[1] + Vector3.up * d, Color.red, 300);
+			//	Debug.DrawLine(tri.vertices[1] + Vector3.up * d, tri.vertices[2] + Vector3.up * d, Color.blue, 300);
+			//	Debug.DrawLine(tri.vertices[2] + Vector3.up * d, tri.vertices[0] + Vector3.up * d, Color.green, 300);
+			//	++d;
+			//}
 
 			return triangles.ToArray();
 		}

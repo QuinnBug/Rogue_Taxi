@@ -1,9 +1,10 @@
+using Earclipping;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Earclipping;
 using Utility;
-using System;
+using static UnityEditor.Searcher.SearcherWindow.Alignment;
 
 public class MeshBuilder : MonoBehaviour
 {
@@ -144,11 +145,10 @@ public class MeshBuilder : MonoBehaviour
             }
         }
 
-        Debug.Log("[MB] verts:idxList:triCount || " + verts.Count + " : " + idxList.Count + " : " + polyTris.Length);
-
         List<Vector3> normalList = new List<Vector3>(CalculateNormals(verts.ToArray(), idxList.ToArray()));
-        List<Vector2> uvList = new List<Vector2>(CalculateUVs(idxList, verts, textureScales[0]));
+        List<Vector2> uvList = new List<Vector2>(CalculateUVs(verts, normalList, textureScales[0]));
 
+        //Debug.Log("[MB] Verts: " + verts.Count + ", UVs: " + uvList.Count);
 
         mesh.vertices = verts.ToArray();
         mesh.SetUVs(0, uvList);
@@ -207,7 +207,7 @@ public class MeshBuilder : MonoBehaviour
                     idxList.Reverse();
                 }
                 normalList = new List<Vector3>(CalculateNormals(verts.ToArray(), idxList.ToArray()));
-                uvList = new List<Vector2>(CalculateUVs(idxList, verts, textureScales[1]));
+                uvList = new List<Vector2>(CalculateUVs(verts, normalList, textureScales[1]));
 
                 Mesh subMesh = new Mesh();
                 subMesh.vertices = verts.ToArray();
@@ -233,64 +233,23 @@ public class MeshBuilder : MonoBehaviour
         return mesh;
     }
 
-    private Vector2[] CalculateUVs(List<int> idxList, List<Vector3> points, Vector2 textureScale)
+    private Vector2[] CalculateUVs(List<Vector3> points, List<Vector3> normals, Vector2 textureScale)
     {
-        List<Vector2> uvs = new List<Vector2>();
+        //We want 1 UV for each vertex
+        Vector2[] uvs = new Vector2[points.Count];
 
-        for (int i = 0; i < points.Count; i += 3)
+        for (int i = 0; i < uvs.Length; ++i)
         {
-            Vector3[] vertices = new Vector3[3];
-            vertices[0] = points[idxList[i]];
-            vertices[1] = points[Lists.ClampListIndex(idxList[i]+1, points.Count)];
-            vertices[2] = points[Lists.ClampListIndex(idxList[i]+2, points.Count)];
-
-            Vector3 startingForward = Geometry.GetNormalOfPoints(vertices[0], vertices[1], vertices[2]);
-
             //Rotate each of the points so that the normal is (0,0,-1) - Facing the screen
             //That gives us the local x,y and we can then calculate the uv as before
             Quaternion quaternion = Quaternion.identity;
-            //This is giving me the wrong rotation for some walls;
-            quaternion.SetFromToRotation(startingForward, Vector3.back);
+            quaternion.SetFromToRotation(normals[i], Vector3.back);
+            Vector2 newUV = (Vector2)(quaternion * points[i]);
 
-            Vector2 bottomLeft = Vector2.positiveInfinity;
-
-            Triangle test = new Triangle(vertices[0], vertices[1], vertices[2]);
-            //test.DebugDraw(Color.red, 120);
-
-            for (int j = 0; j < 3; j++)
-            {
-                vertices[j] = (Vector2)(quaternion * vertices[j]);
-                //Debug.Log(startingForward + " " + points[i + j] + " >> " + vertices[j]);
-
-                if (vertices[j].x < bottomLeft.x) bottomLeft.x = vertices[j].x;
-                if (vertices[j].y < bottomLeft.y) bottomLeft.y = vertices[j].y;
-            }
-
-            test.vertices = vertices;
-            //test.DebugDraw(Color.green, 120);
-
-
-            foreach (Vector2 v in vertices)
-            {
-                //Vector2 uv = (v - bottomLeft) / textureScale;
-                Vector2 uv = v / textureScale;
-                uvs.Add(uv);
-            }
+            newUV /= textureScale;
+            uvs[i] = newUV;
         }
 
-        return uvs.ToArray();
+        return uvs;
     }
-
-    //private Vector2[] CalculateUVs(Polygon poly, List<Vector3> points)
-    //{
-    //    List<Vector2> uvs = new List<Vector2>();
-    //    List<Vertex> vertices = new List<Vertex>(poly.vertices);
-
-    //    foreach (Vector3 point in points)
-    //    {
-    //        uvs.Add(vertices.Find(x => x.point == point).uv);
-    //    }
-
-    //    return uvs.ToArray();
-    //}
 }
