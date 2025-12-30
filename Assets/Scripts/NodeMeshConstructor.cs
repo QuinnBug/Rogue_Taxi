@@ -75,7 +75,7 @@ public class NodeMeshConstructor : MonoBehaviour
             }
         }
 
-        Debug.Log("Mesh Created");
+        Debug.Log("Polygons Created");
         meshCreated = true;
     }
 

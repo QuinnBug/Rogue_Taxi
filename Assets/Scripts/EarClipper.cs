@@ -95,8 +95,9 @@ namespace Earclipping
 			}
 
 			//Step 1. Store the vertices in a list and we also need to know the next and prev vertex
+			int polyUniqueVertexCount = poly.vertices.Length - 1; //the last and first vertex are the same
 			vertices.Clear();
-			for (int i = 0; i < poly.vertices.Length; i++)
+			for (int i = 0; i < polyUniqueVertexCount; i++)
 			{
 				vertices.Add(new Vertex(poly.vertices[i].point));
 			}
@@ -132,7 +133,7 @@ namespace Earclipping
 				if (vertices.Count == 3)
 				{
 					//The final triangle
-					triangles.Add(new Triangle(vertices[0].point, vertices[0].prev.point, vertices[0].next.point));
+					triangles.Add(new Triangle(vertices[0].point, vertices[0].next.point, vertices[0].prev.point));
 					break;
 				}
 				else if (vertices.Count < 3 || earVertices.Count == 0) break;
@@ -142,7 +143,7 @@ namespace Earclipping
 				earVertexPrev = earVertex.prev;
 				earVertexNext = earVertex.next;
 
-				newTriangle = new Triangle(earVertex.point, earVertexPrev.point, earVertexNext.point);
+				newTriangle = new Triangle(earVertex.point, earVertexNext.point, earVertexPrev.point);
 
 				triangles.Add(newTriangle);
 
@@ -163,6 +164,15 @@ namespace Earclipping
 
 				IsVertexEar(earVertexPrev, vertices, earVertices, poly);
 				IsVertexEar(earVertexNext, vertices, earVertices, poly);
+			}
+
+			int d = 0;
+			foreach (var tri in triangles)
+			{
+				Debug.DrawLine(tri.vertices[0] + Vector3.up * d, tri.vertices[1] + Vector3.up * d, Color.red, 300);
+				Debug.DrawLine(tri.vertices[1] + Vector3.up * d, tri.vertices[2] + Vector3.up * d, Color.blue, 300);
+				Debug.DrawLine(tri.vertices[2] + Vector3.up * d, tri.vertices[0] + Vector3.up * d, Color.green, 300);
+				++d;
 			}
 
 			return triangles.ToArray();
@@ -246,12 +256,13 @@ namespace Earclipping
 	}
 	
 	[System.Serializable]
-	public class Triangle 
+	public struct Triangle 
 	{
-	    public Vector3[] vertices = new Vector3[3];
+		public Vector3[] vertices;
 	
 		public Triangle(Vector3 a, Vector3 b, Vector3 c) 
 		{
+			vertices = new Vector3[3];
 			vertices[0] = a;
 			vertices[1] = b;
 			vertices[2] = c;
@@ -377,7 +388,7 @@ namespace Earclipping
 					//Debug.Log("no identical line in tLine " + center);
                 }
             }
-            
+
 			vertices = points.ToArray();
 
 			center = _center;
@@ -511,11 +522,7 @@ namespace Utility
 			Vector3 U, V;
 			U = b - a;
 			V = c - a;
-			result.x = Mathf.Abs((U.y * V.z) - (U.z * V.y));
-			result.y = Mathf.Abs((U.z * V.x) - (U.x * V.z));
-			result.z = Mathf.Abs((U.x * V.y) - (U.y * V.x));
-
-			return result.normalized;
+			return Vector3.Cross(U, V).normalized;
 		}
 	}
 }

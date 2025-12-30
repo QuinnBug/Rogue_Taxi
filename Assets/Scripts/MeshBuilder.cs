@@ -7,16 +7,20 @@ using System;
 
 public class MeshBuilder : MonoBehaviour
 {
-    public bool spawnMesh;
+    public float d_SecondsPerLoop;
+    public int d_PolygonsPerLoop;
+    [Space]
     public GameObject prefabObj;
     public Transform roadHolder;
     public Material[] materialPallette;
     public Vector2[] textureScales;
     [Space]
-    EarClipper clipper;
-    NodeMeshConstructor nmc;
     public Mesh[] meshes;
     public GameObject[] roads;
+
+    private bool spawnMesh;
+    private EarClipper clipper;
+    private NodeMeshConstructor nmc;
 
     // Start is called before the first frame update
     void Start()
@@ -24,7 +28,7 @@ public class MeshBuilder : MonoBehaviour
         meshes = null;
         roads = null;
         clipper = GetComponent<EarClipper>();
-        nmc = clipper.nmc;
+        nmc = FindAnyObjectByType<NodeMeshConstructor>();
     }
 
     // Update is called once per frame
@@ -32,8 +36,7 @@ public class MeshBuilder : MonoBehaviour
     {
         if (nmc.meshCreated && meshes == null)
         {
-            CreateMeshes(nmc.polygons);
-            spawnMesh = true;
+            StartCoroutine(CreateMeshes(nmc.polygons));
         }
 
         if (meshes != null && spawnMesh == true)
@@ -54,8 +57,8 @@ public class MeshBuilder : MonoBehaviour
 
             roads[i].GetComponent<MeshFilter>().mesh = meshes[i];
 
-            List<Material> mats = new List<Material>() { materialPallette[0] };
-            for (int j = 1; j < meshes[i].subMeshCount; j++)
+            List<Material> mats = new List<Material>() { materialPallette[0], materialPallette[0]};
+            for (int j = 2; j < meshes[i].subMeshCount; j++)
             {
                 mats.Add(materialPallette[1]);
             }
@@ -68,159 +71,178 @@ public class MeshBuilder : MonoBehaviour
     private Vector3[] CalculateNormals(Vector3[] verts, int[] idxList) 
     {
         Vector3[] normals = new Vector3[verts.Length];
-
-        for (int k = 0; k < idxList.Length; k += 3)
+        int triCount = idxList.Length / 3;
+        for (int i = 0; i < triCount; ++i)
         {
-            int v1 = idxList[k];
-            int v2 = idxList[Lists.ClampListIndex(k + 1, idxList.Length)];
-            int v3 = idxList[Lists.ClampListIndex(k + 2, idxList.Length)];
+            int triIdx = i * 3;
+            int vertIdxA = idxList[triIdx];
+            int vertIdxB = idxList[triIdx+1];
+            int vertIdxC = idxList[triIdx+2];
 
-            Vector3 n = Geometry.GetNormalOfPoints(verts[v1], verts[v2], verts[v3]);
-            normals[v1] += n;
-            normals[v2] += n;
-            normals[v3] += n;
+            if (vertIdxA >= verts.Length) 
+            {
+                Debug.Log("[MB] A:" + vertIdxA);
+            }
+            if (vertIdxB >= verts.Length)
+            {
+                Debug.Log("[MB] B:" + vertIdxB);
+            }
+            if (vertIdxC >= verts.Length)
+            {
+                Debug.Log("[MB] C:" + vertIdxC);
+            }
+            Vector3 n = Geometry.GetNormalOfPoints(verts[vertIdxA], verts[vertIdxB], verts[vertIdxC]);
+            
+            normals[vertIdxA] += n;
+            normals[vertIdxB] += n;
+            normals[vertIdxC] += n;
         }
 
-        for (int k = 0; k < normals.Length; k++)
+        for (int j = 0; j < normals.Length; j++)
         {
-            normals[k].Normalize();
+            normals[j].Normalize();
         }
 
         return normals;
     }
 
-    private void CreateMeshes(List<Polygon> polygons)
+    private IEnumerator CreateMeshes(List<Polygon> polygons)
     {
+        Debug.Log("[MB] Creating Meshes");
         meshes = new Mesh[polygons.Count];
         int i = 0;
         foreach (Polygon poly in polygons)
         {
-            meshes[i] = new Mesh();
+            //QWN:: Test this
+            meshes[i] = BuildMeshFromPoly(poly);
+            ++i;
 
-            Triangle[] polyTris = clipper.GetTriangles(poly);
-
-            List<Vector3> verts = new List<Vector3>();
-            List<int> idxList = new List<int>();
-
-            foreach (Triangle tri in polyTris)
+            if (i % d_PolygonsPerLoop == 0) 
             {
-                for (int v = 0; v < tri.vertices.Length; v++)
-                {
-                    verts.Add(tri.vertices[v]);
-                    idxList.Add(verts.Count-1);
-                }
+                yield return new WaitForSeconds(d_SecondsPerLoop);
             }
-
-            //need to go through each vert and find the correct normal (possibly need to check the tri formed by the normals)
-            List<Vector3> normalList = new List<Vector3>(CalculateNormals(verts.ToArray(), idxList.ToArray()));
-            List<Vector2> uvList = new List<Vector2>(CalculateUVs(idxList, verts, textureScales[0]));
-
-            List<int> idxRev = new List<int>(idxList);
-            idxRev.Reverse();
-            idxList.AddRange(idxRev);
-
-            meshes[i].vertices = verts.ToArray();
-            meshes[i].SetUVs(0, uvList);
-            meshes[i].triangles = idxList.ToArray();
-            meshes[i].normals = normalList.ToArray();
-            meshes[i].tangents = new Vector4[verts.Count];
-
-            //if the polygon is going to be a 3d mesh we need to build the other linked polygon
-            if (poly.isThreeD && poly.linkedPolygons != null)
-            {
-                List<Mesh> meshList = new List<Mesh>() { meshes[i] };
-                
-                foreach (Polygon linkedPoly in poly.linkedPolygons)
-                {
-                    verts.Clear();
-                    idxList.Clear();
-                    normalList.Clear();
-                    if (linkedPoly.isVert)
-                    {
-                        verts.Clear();
-                        //foreach (Vertex vertex in linkedPoly.vertices)
-                        //{
-                        //    verts.Add(vertex.point);
-                        //}
-
-                        //the list of vertices halved then -1 for 0 start
-                        for (int top = 0; top < (linkedPoly.vertices.Length /2); top++)
-                        {
-                            int bottom = (linkedPoly.vertices.Length - 1) - top;
-
-                            verts.Add(linkedPoly.vertices[top].point);
-                            idxList.Add(verts.Count - 1);
-                            verts.Add(linkedPoly.vertices[bottom - 1].point);
-                            idxList.Add(verts.Count - 1);
-                            verts.Add(linkedPoly.vertices[top + 1].point);
-                            idxList.Add(verts.Count - 1);
-
-                            //--
-
-                            verts.Add(linkedPoly.vertices[top].point);
-                            idxList.Add(verts.Count - 1);
-                            verts.Add(linkedPoly.vertices[bottom].point);
-                            idxList.Add(verts.Count - 1);
-                            verts.Add(linkedPoly.vertices[bottom - 1].point);
-                            idxList.Add(verts.Count - 1);
-                        }
-                    }
-                    else
-                    {
-                        polyTris = clipper.GetTriangles(linkedPoly);
-                        
-                        foreach (Triangle tri in polyTris)
-                        {
-                            foreach (Vector3 v in tri.vertices)
-                            {
-                                verts.Add(v);
-                                idxList.Add(verts.Count - 1);
-                            }
-                        }
-                    }
-
-                    normalList = new List<Vector3>(CalculateNormals(verts.ToArray(), idxList.ToArray()));
-                    uvList = new List<Vector2>(CalculateUVs(idxList, verts, textureScales[1]));
-
-                    idxRev = new List<int>(idxList);
-                    idxRev.Reverse();
-                    idxList.AddRange(idxRev);
-
-                    Mesh subMesh = new Mesh();
-                    subMesh.vertices = verts.ToArray();
-                    subMesh.SetUVs(0, uvList);
-                    subMesh.triangles = idxList.ToArray();
-                    subMesh.normals = normalList.ToArray();
-                    subMesh.tangents = new Vector4[verts.Count];
-                    meshList.Add(subMesh);
-                }
-
-                CombineInstance[] combine = new CombineInstance[meshList.Count];
-                for (int m = 0; m < meshList.Count; m++)
-                {
-                    combine[m] = new CombineInstance();
-                    combine[m].mesh = meshList[m];
-                    combine[m].transform = transform.localToWorldMatrix;
-                }
-
-                meshes[i] = new Mesh();
-                meshes[i].CombineMeshes(combine, false);
-            }
-
-            i++;
         }
+
+        Debug.Log("[MB] Meshes Created");
+        spawnMesh = true;
+    }
+
+    private Mesh BuildMeshFromPoly(Polygon poly) 
+    {
+        Mesh mesh = new Mesh();
+        Triangle[] polyTris = clipper.GetTriangles(poly);
+
+        List<Vector3> verts = new List<Vector3>();
+        List<int> idxList = new List<int>();
+
+        foreach (Triangle tri in polyTris)
+        {
+            foreach (Vector3 vert in tri.vertices)
+            {
+                if (!verts.Contains(vert)) { verts.Add(vert); }
+                idxList.Add(verts.IndexOf(vert));
+            }
+        }
+
+        Debug.Log("[MB] verts:idxList:triCount || " + verts.Count + " : " + idxList.Count + " : " + polyTris.Length);
+
+        List<Vector3> normalList = new List<Vector3>(CalculateNormals(verts.ToArray(), idxList.ToArray()));
+        List<Vector2> uvList = new List<Vector2>(CalculateUVs(idxList, verts, textureScales[0]));
+
+
+        mesh.vertices = verts.ToArray();
+        mesh.SetUVs(0, uvList);
+        mesh.triangles = idxList.ToArray();
+        mesh.normals = normalList.ToArray();
+        mesh.tangents = new Vector4[verts.Count];
+
+        //if the polygon is going to be a 3d mesh we need to build the other linked polygon
+        if (poly.isThreeD && poly.linkedPolygons != null)
+        {
+            List<Mesh> meshList = new List<Mesh>() { mesh };
+
+            foreach (Polygon linkedPoly in poly.linkedPolygons)
+            {
+                verts.Clear();
+                idxList.Clear();
+                normalList.Clear();
+
+                //Walls
+                if (linkedPoly.isVert)
+                {
+                    //the list of vertices halved then -1 for 0 start
+                    for (int top = 0; top < (linkedPoly.vertices.Length / 2); top++)
+                    {
+                        int bottom = (linkedPoly.vertices.Length - 1) - top;
+
+                        verts.Add(linkedPoly.vertices[top].point);
+                        idxList.Add(verts.Count - 1);
+                        verts.Add(linkedPoly.vertices[bottom - 1].point);
+                        idxList.Add(verts.Count - 1);
+                        verts.Add(linkedPoly.vertices[top + 1].point);
+                        idxList.Add(verts.Count - 1);
+
+                        //--
+
+                        verts.Add(linkedPoly.vertices[top].point);
+                        idxList.Add(verts.Count - 1);
+                        verts.Add(linkedPoly.vertices[bottom].point);
+                        idxList.Add(verts.Count - 1);
+                        verts.Add(linkedPoly.vertices[bottom - 1].point);
+                        idxList.Add(verts.Count - 1);
+                    }
+                }
+                else //Ceiling
+                {
+                    polyTris = clipper.GetTriangles(linkedPoly);
+
+                    foreach (Triangle tri in polyTris)
+                    {
+                        foreach (Vector3 vert in tri.vertices)
+                        {
+                            if (!verts.Contains(vert)) { verts.Add(vert); }
+                            idxList.Add(verts.IndexOf(vert));
+                        }
+                    }
+                    idxList.Reverse();
+                }
+                normalList = new List<Vector3>(CalculateNormals(verts.ToArray(), idxList.ToArray()));
+                uvList = new List<Vector2>(CalculateUVs(idxList, verts, textureScales[1]));
+
+                Mesh subMesh = new Mesh();
+                subMesh.vertices = verts.ToArray();
+                subMesh.SetUVs(0, uvList);
+                subMesh.triangles = idxList.ToArray();
+                subMesh.normals = normalList.ToArray();
+                subMesh.tangents = new Vector4[verts.Count];
+                meshList.Add(subMesh);
+            }
+
+            CombineInstance[] combine = new CombineInstance[meshList.Count];
+            for (int m = 0; m < meshList.Count; m++)
+            {
+                combine[m] = new CombineInstance();
+                combine[m].mesh = meshList[m];
+                combine[m].transform = transform.localToWorldMatrix;
+            }
+
+            mesh = new Mesh();
+            mesh.CombineMeshes(combine, false);
+        }
+
+        return mesh;
     }
 
     private Vector2[] CalculateUVs(List<int> idxList, List<Vector3> points, Vector2 textureScale)
     {
         List<Vector2> uvs = new List<Vector2>();
 
-        for (int i = 0; i < idxList.Count; i += 3)
+        for (int i = 0; i < points.Count; i += 3)
         {
             Vector3[] vertices = new Vector3[3];
             vertices[0] = points[idxList[i]];
-            vertices[1] = points[idxList[i]+1];
-            vertices[2] = points[idxList[i]+2];
+            vertices[1] = points[Lists.ClampListIndex(idxList[i]+1, points.Count)];
+            vertices[2] = points[Lists.ClampListIndex(idxList[i]+2, points.Count)];
 
             Vector3 startingForward = Geometry.GetNormalOfPoints(vertices[0], vertices[1], vertices[2]);
 
@@ -233,7 +255,7 @@ public class MeshBuilder : MonoBehaviour
             Vector2 bottomLeft = Vector2.positiveInfinity;
 
             Triangle test = new Triangle(vertices[0], vertices[1], vertices[2]);
-            test.DebugDraw(Color.red, 120);
+            //test.DebugDraw(Color.red, 120);
 
             for (int j = 0; j < 3; j++)
             {
@@ -245,7 +267,7 @@ public class MeshBuilder : MonoBehaviour
             }
 
             test.vertices = vertices;
-            test.DebugDraw(Color.green, 120);
+            //test.DebugDraw(Color.green, 120);
 
 
             foreach (Vector2 v in vertices)

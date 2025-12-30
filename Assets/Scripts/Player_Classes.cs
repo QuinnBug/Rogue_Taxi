@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class PlayerStats 
+public struct PlayerStats 
 {
     public float moveSpeed;
     public float turnSpeed;

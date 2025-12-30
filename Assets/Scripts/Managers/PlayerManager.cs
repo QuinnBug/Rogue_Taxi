@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Player_Manager : Singleton<Player_Manager>
+public class PlayerManager : Singleton<PlayerManager>
 {
     public PlayerStats stats;
 

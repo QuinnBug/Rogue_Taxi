@@ -15,7 +15,7 @@ public class Harpoon : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
-        playerRb = Player_Manager.Instance.rb;
+        playerRb = PlayerManager.Instance.rb;
     }
 
     private void Update()

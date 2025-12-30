@@ -72,7 +72,7 @@ public class Turret : MonoBehaviour
         {
             fireTimer = fireDelay;
 
-            Player_Manager.Instance.stats.currentAmmo--;
+            PlayerManager.Instance.stats.currentAmmo--;
             projectile = Instantiate(projectilePrefab, transform.TransformPoint(projectileSpawnpoint), Quaternion.identity);
 
             Rigidbody proj_rb;
