@@ -1,83 +1,21 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using Utility;
-using UnityEditor;
+using static UnityEditor.Searcher.SearcherWindow.Alignment;
 
 
 namespace Earclipping
 {
-	public class EarClipper : MonoBehaviour
+	public class EarClipper
 	{
-		public bool drawTris;
-		[Space]
-		public bool doClip;
-		[Space]
-		public float timePerTri;
-		public float timePerPoly;
-		[Space]
-		public List<Triangle[]> triList = null;
-		public bool clippingDone;
-
 		internal NodeMeshConstructor nmc;
-		List<Vertex> vertices;
-
-		Vertex displayEarTip = null;
-
-		public void Start()
-		{
-			displayEarTip = null;
-			nmc = FindFirstObjectByType<NodeMeshConstructor>();
-			triList = null;
-			//clippingDone = false;
-		}
-
-		public void Update()
-		{
-			if (nmc.meshCreated && triList == null && !clippingDone && doClip)
-			{
-				doClip = false;
-				//ClipAllPolygonCoRoutine();
-			}
-		}
-
-		public void ClipAllPolygonCoRoutine()
-		{
-			triList = new List<Triangle[]>();
-			StartCoroutine(ClipPolygons(nmc.polygons.ToArray()));
-		}
-
-		private void OnDrawGizmos()
-		{
-			if (triList != null && drawTris)
-			{
-				foreach (Triangle[] tris in triList)
-				{
-					foreach (Triangle triangle in tris)
-					{
-						for (int i = 0; i < 3; i++)
-						{
-							int j = Lists.ClampListIndex(i + 1, 3);
-
-							Gizmos.color = Color.red;
-							Gizmos.DrawLine(triangle.vertices[i], triangle.vertices[j]);
-						}
-					}
-				}
-			}
-
-			if (displayEarTip != null && displayEarTip.prev != null && displayEarTip.next != null)
-			{
-				Handles.Label(displayEarTip.point, displayEarTip.isReflex.ToString() + " - 1");
-				Handles.Label(displayEarTip.prev.point, displayEarTip.prev.isReflex.ToString() + " - 0");
-				Handles.Label(displayEarTip.next.point, displayEarTip.next.isReflex.ToString() + " - 2");
-			}
-		}
 
 		public Triangle[] GetTriangles(Polygon poly)
 		{
-			vertices = new List<Vertex>();
+            List<Vertex> vertices = new List<Vertex>();
 			List<Triangle> triangles = new List<Triangle>();
 			List<Vertex> earVertices = new List<Vertex>();
 
@@ -176,17 +114,6 @@ namespace Earclipping
 			//}
 
 			return triangles.ToArray();
-		}
-
-		IEnumerator ClipPolygons(Polygon[] polygons)
-		{
-			foreach (Polygon poly in polygons)
-			{
-				triList.Add(GetTriangles(poly));
-				if (timePerPoly > 0) yield return new WaitForSeconds(timePerPoly);
-			}
-
-			clippingDone = true;
 		}
 
 		//Check if a vertex if reflex or convex, and add to appropriate list

@@ -33,7 +33,7 @@ public class NodeMeshConstructor : MonoBehaviour
     public float m_extrusionDepth;
 
     internal bool meshCreated;
-    internal List<Polygon> polygons = null;
+    internal Dictionary<uint, List<Polygon>> polygons = null;
 
     private int m_nodeCounter = 0;
 
@@ -60,15 +60,17 @@ public class NodeMeshConstructor : MonoBehaviour
 
     IEnumerator CreatePolygonFromNodes() 
     {
-        polygons = new List<Polygon>();
+        polygons = new Dictionary<uint, List<Polygon>>();
 
         m_nodeCounter = 0;
 
         foreach (Node node in s_nodeManager.AllNodes())
         {
-            if (node.connections.Count == 0) continue;
+            if (node.m_connections.Count == 0) continue;
 
-            polygons.Add(PolyFromNode(node));
+            polygons.TryAdd(node.m_id, new List<Polygon>());
+            polygons[node.m_id].Add(PolyFromNode(node));
+
             if (++m_nodeCounter % db_nodesPerStep == 0)
             {
                 if (db_timePerNode > 0) { yield return new WaitForSeconds(db_timePerNode); }
@@ -87,12 +89,12 @@ public class NodeMeshConstructor : MonoBehaviour
         //creates the intial set of node lines
         List<Line> nodeLines = GetNodePolygonLines(node);
 
-        if (node.connections.Count == 1)
+        if (node.m_connections.Count == 1)
         {
             //this is a dead end node so we need to draw around the node a lil extra
             Vector3[] points = new Vector3[4];
-            Vector3 farPoint = node.point + ((node.point - node.connections[0].point).normalized * m_roadWidth);
-            Quaternion rotation = Quaternion.LookRotation(node.connections[0].point - node.point, Vector3.up);
+            Vector3 farPoint = node.m_point + ((node.m_point - node.m_connections[0].m_point).normalized * m_roadWidth);
+            Quaternion rotation = Quaternion.LookRotation(node.m_connections[0].m_point - node.m_point, Vector3.up);
 
             //close points
             points[0] = nodeLines[^1].b;
@@ -110,12 +112,12 @@ public class NodeMeshConstructor : MonoBehaviour
         {
             Line newLine = new Line(nodeLines[0].a, nodeLines[^1].b);
 
-            foreach (Node conn in node.connections)
+            foreach (Node conn in node.m_connections)
             {
-                if (newLine.DoesIntersect(node.point, conn.point, out Vector3 iPoint))
+                if (newLine.DoesIntersect(node.m_point, conn.m_point, out Vector3 iPoint))
                 {
-                    Vector3 direction = (node.point - Vector3.Lerp(newLine.a, newLine.b, 0.5f)).normalized;
-                    Line otherLine = new Line(node.point + (direction * (m_roadWidth * 0.25f)), newLine.b);
+                    Vector3 direction = (node.m_point - Vector3.Lerp(newLine.a, newLine.b, 0.5f)).normalized;
+                    Line otherLine = new Line(node.m_point + (direction * (m_roadWidth * 0.25f)), newLine.b);
                     newLine.b = otherLine.a;
                     nodeLines.Add(otherLine);
                     break;
@@ -166,11 +168,11 @@ public class NodeMeshConstructor : MonoBehaviour
                     }
 
                     //replace the point closer to the node center, with the intersection point
-                    if (nodeLines[mainIdx].CloserToA(node.point)) { nodeLines[mainIdx].a = intersection; }
+                    if (nodeLines[mainIdx].CloserToA(node.m_point)) { nodeLines[mainIdx].a = intersection; }
                     else { nodeLines[mainIdx].b = intersection; }
                     //nodeLines[mainIdx].DebugDraw(Color.red, 100, Vector3.up, true);
 
-                    if (nodeLines[comparisonIdx].CloserToA(node.point)) { nodeLines[comparisonIdx].a = intersection; }
+                    if (nodeLines[comparisonIdx].CloserToA(node.m_point)) { nodeLines[comparisonIdx].a = intersection; }
                     else { nodeLines[comparisonIdx].b = intersection; }
                     //nodeLines[comparisonIdx].DebugDraw(Color.purple, 100, Vector3.up, true);
 
@@ -186,7 +188,7 @@ public class NodeMeshConstructor : MonoBehaviour
         }
         
 
-        Polygon poly = new Polygon(nodeLines, node.point);
+        Polygon poly = new Polygon(nodeLines, node.m_point);
 
         return m_extrude ? ExtrudeNodePolygon(poly, node) : poly;
     }
@@ -195,7 +197,7 @@ public class NodeMeshConstructor : MonoBehaviour
     {
         List<Line> nodeLines = new List<Line>();
 
-        foreach (Node conn in _node.connections)
+        foreach (Node conn in _node.m_connections)
         {
             Vector3[] corners = GetNodeToConnectionPolygonCorners(_node, conn);
 
@@ -214,10 +216,10 @@ public class NodeMeshConstructor : MonoBehaviour
                 Line linkingLine = new Line(nodeLines[^1].b, lines[0].a);
 
                 //Does the linkingLine overlap the centre 
-                if (linkingLine.DoesIntersect(_node.point, conn.point, out Vector3 intersectionPoint))
+                if (linkingLine.DoesIntersect(_node.m_point, conn.m_point, out Vector3 intersectionPoint))
                 {
-                    Vector3 direction = (_node.point - Vector3.Lerp(linkingLine.a, linkingLine.b, 0.5f)).normalized;
-                    Line overlapFixLine = new Line(linkingLine.a, _node.point + (direction * (m_roadWidth * 0.5f)));
+                    Vector3 direction = (_node.m_point - Vector3.Lerp(linkingLine.a, linkingLine.b, 0.5f)).normalized;
+                    Line overlapFixLine = new Line(linkingLine.a, _node.m_point + (direction * (m_roadWidth * 0.5f)));
                     linkingLine.a = overlapFixLine.b;
                     nodeLines.Add(overlapFixLine);
                 }
@@ -236,25 +238,25 @@ public class NodeMeshConstructor : MonoBehaviour
         Vector3[] corners = new Vector3[4];
 
         //find midpoint from node to conn
-        Vector3 lineEnd = Vector3.Lerp(_node.point, _conn.point, 0.5f);
+        Vector3 lineEnd = Vector3.Lerp(_node.m_point, _conn.m_point, 0.5f);
         //get the forward rotation Node>>Point
-        Quaternion forwardRotation = Quaternion.LookRotation(_conn.point - _node.point, Vector3.up);
+        Quaternion forwardRotation = Quaternion.LookRotation(_conn.m_point - _node.m_point, Vector3.up);
 
         //Bottom Left
-        corners[0] = _node.point + (forwardRotation * (-Vector3.right * m_roadWidth));
+        corners[0] = _node.m_point + (forwardRotation * (-Vector3.right * m_roadWidth));
         //Top Left
         corners[1] = lineEnd + (forwardRotation * (-Vector3.right * m_roadWidth));
         //Top Right
         corners[2] = lineEnd + (forwardRotation * (Vector3.right * m_roadWidth));
         //Bottom Right
-        corners[3] = _node.point + (forwardRotation * (Vector3.right * m_roadWidth));
+        corners[3] = _node.m_point + (forwardRotation * (Vector3.right * m_roadWidth));
 
         return corners;
     }
 
     private void UpdateNodeToConnectionLine(Node _node, Line _line, bool _updateStart = true) 
     {
-        if (_line.CircleIntersections(_node.point, m_nodeRadius, out Vector3[] intersections))
+        if (_line.CircleIntersections(_node.m_point, m_nodeRadius, out Vector3[] intersections))
         {
             Vector3 point = intersections[0];
 
@@ -264,7 +266,7 @@ public class NodeMeshConstructor : MonoBehaviour
                 Line intersectionLine = new Line(intersections[1], intersections[0]);
                 //is the point of the line furthest from to the center of the node, closer to the second intersection point 
                 if (intersectionLine.CloserToA(
-                    _line.CloserToA(_node.point) ? _line.b : _line.a)
+                    _line.CloserToA(_node.m_point) ? _line.b : _line.a)
                     )
                 {
                     point = intersections[1];
@@ -295,12 +297,12 @@ public class NodeMeshConstructor : MonoBehaviour
             extrudedVertices[i] = _poly.vertices[i].point + (Vector3.up * m_extrusionDepth);
         }
 
-        Polygon extrudedPoly = new Polygon(_node.point, extrudedVertices);
+        Polygon extrudedPoly = new Polygon(_node.m_point, extrudedVertices);
 
-        Line[] connectionLines = new Line[_node.connections.Count];
-        for (int i = 0; i < _node.connections.Count; i++)
+        Line[] connectionLines = new Line[_node.m_connections.Count];
+        for (int i = 0; i < _node.m_connections.Count; i++)
         {
-            connectionLines[i] = new Line(_node.point, _node.connections[i].point);
+            connectionLines[i] = new Line(_node.m_point, _node.m_connections[i].m_point);
         }
 
         //each of these arrays are individual polygons
@@ -382,7 +384,7 @@ public class NodeMeshConstructor : MonoBehaviour
         _poly.AddConnectedPolygon(extrudedPoly);
         foreach (Vector3[] vertexArray in wallVertices)
         {
-            _poly.AddConnectedPolygon(new Polygon(_node.point, vertexArray, true));
+            _poly.AddConnectedPolygon(new Polygon(_node.m_point, vertexArray, true));
         }
         _poly.isThreeD = true;
 
@@ -411,28 +413,32 @@ public class NodeMeshConstructor : MonoBehaviour
     {
         if (polygons != null && (db_drawPolygons || db_drawPoints))
         {
-            for (int i = 0; i < polygons.Count; i++)
+            foreach (List<Polygon> polyList in polygons.Values)
             {
-                for (int j = 0; j < polygons[i].vertices.Length; j++)
+                for (int i = 0; i < polyList.Count; i++)
                 {
-                    if (j > 0 && db_drawPolygons)
+                    for (int j = 0; j < polyList[i].vertices.Length; j++)
                     {
-                        Gizmos.color = Color.cyan;
-                        Gizmos.DrawLine(polygons[i].vertices[j].point, polygons[i].vertices[j - 1].point);
-                    }
-
-                    if (db_drawPoints) 
-                    {
-                        Gizmos.color = new Color(1, 0, 0, 0.1f);
-                        Gizmos.DrawSphere(polygons[i].vertices[j].point, 0.2f);
-
-                        if (db_focusedPolyIdx == i)
+                        if (j > 0 && db_drawPolygons)
                         {
-                            Handles.Label(polygons[i].vertices[j].point + (Vector3.up * 0.1f * (j+1)), j.ToString());
+                            Gizmos.color = Color.cyan;
+                            Gizmos.DrawLine(polyList[i].vertices[j].point, polyList[i].vertices[j - 1].point);
+                        }
+
+                        if (db_drawPoints)
+                        {
+                            Gizmos.color = new Color(1, 0, 0, 0.1f);
+                            Gizmos.DrawSphere(polyList[i].vertices[j].point, 0.2f);
+
+                            if (db_focusedPolyIdx == i)
+                            {
+                                Handles.Label(polyList[i].vertices[j].point + (Vector3.up * 0.1f * (j + 1)), j.ToString());
+                            }
                         }
                     }
                 }
             }
+           
         }
     }
 }

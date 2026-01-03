@@ -28,7 +28,7 @@ public class MeshBuilder : MonoBehaviour
     {
         meshes = null;
         roads = null;
-        clipper = GetComponent<EarClipper>();
+        clipper = new EarClipper();
         nmc = FindAnyObjectByType<NodeMeshConstructor>();
     }
 
@@ -37,18 +37,22 @@ public class MeshBuilder : MonoBehaviour
     {
         if (nmc.meshCreated && meshes == null)
         {
-            StartCoroutine(CreateMeshes(nmc.polygons));
+            List<Polygon> polygons = new List<Polygon>();
+            foreach (var polyList in nmc.polygons.Values)
+            {
+                polygons.AddRange(polyList);
+            }
+            StartCoroutine(GenerateMeshes(polygons));
         }
 
         if (meshes != null && spawnMesh == true)
         {
             spawnMesh = false;
-            CreateRoads();
-            //BuildingPopulator.Instance.spawnBuildings = true;
+            InstantiateMeshes();
         }
     }
 
-    private void CreateRoads()
+    private void InstantiateMeshes()
     {
         roads = new GameObject[meshes.Length];
         for (int i = 0; i < meshes.Length; i++)
@@ -107,7 +111,7 @@ public class MeshBuilder : MonoBehaviour
         return normals;
     }
 
-    private IEnumerator CreateMeshes(List<Polygon> polygons)
+    private IEnumerator GenerateMeshes(List<Polygon> polygons)
     {
         Debug.Log("[MB] Creating Meshes");
         meshes = new Mesh[polygons.Count];
@@ -132,6 +136,7 @@ public class MeshBuilder : MonoBehaviour
     {
         Mesh mesh = new Mesh();
         Triangle[] polyTris = clipper.GetTriangles(poly);
+
 
         List<Vector3> verts = new List<Vector3>();
         List<int> idxList = new List<int>();

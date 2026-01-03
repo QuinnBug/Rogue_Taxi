@@ -29,7 +29,9 @@ public class LNode_Manager : Singleton<LNode_Manager>
     [Space]
     public int nodesPerStep = 50;
     public float timePerStep;
+
     internal NodeMap m_nodeMap = new NodeMap();
+    internal uint m_nodeCount = 0;
 
     internal bool nodeGenDone = false;
 
@@ -56,7 +58,7 @@ public class LNode_Manager : Singleton<LNode_Manager>
         m_nodeMap = new NodeMap();
         Vector2Int startingMapKey = WorldPosToMapKey(currentPos);
         m_nodeMap.TryAdd(startingMapKey, new NodeList());
-        m_nodeMap[startingMapKey].Add(new Node(currentPos));
+        m_nodeMap[startingMapKey].Add(new Node(currentPos, m_nodeCount));
         Node prevNode = m_nodeMap[startingMapKey][0];
 
         foreach (char letter in _sequence)
@@ -96,7 +98,7 @@ public class LNode_Manager : Singleton<LNode_Manager>
                         if (localNodes.Count == 0) { Debug.LogError("[LNM] No nodes found at loaded position"); }
                         foreach (Node item in localNodes)
                         {
-                            if (Vector3.Distance(currentPos, item.point) <= m_nodeLimitRange.min)
+                            if (Vector3.Distance(currentPos, item.m_point) <= m_nodeLimitRange.min)
                             {
                                 prevNode = item;
                                 break;
@@ -148,30 +150,28 @@ public class LNode_Manager : Singleton<LNode_Manager>
 
     private Node AddNode(Vector3 _position, Node _parent)
     {
-        Node nodeAtPosition = new Node(_position);
-
-        bool isNew = true;
+        Node nodeAtPosition = null;
 
         NodeList nodesInRange = GetNodesInRange(_position, (int)Mathf.Ceil(m_nodeLimitRange.min));
         foreach (Node item in nodesInRange)
         {
-            if (_position == item.point || Vector3.Distance(_position, item.point) <= m_nodeLimitRange.min)
+            if (_position == item.m_point || Vector3.Distance(_position, item.m_point) <= m_nodeLimitRange.min)
             {
                 nodeAtPosition = item;
-                isNew = false;
                 break;
             }
         }
 
-        nodeAtPosition.AddConnection(_parent);
+        if (nodeAtPosition == null) 
+        {
+            nodeAtPosition = new Node(_position, ++m_nodeCount);
 
-        Vector2Int mapKey = WorldPosToMapKey(nodeAtPosition.point);
-
-        if (isNew)
-        { 
+            Vector2Int mapKey = WorldPosToMapKey(nodeAtPosition.m_point);
             m_nodeMap.TryAdd(mapKey, new NodeList());
             m_nodeMap[mapKey].Add(nodeAtPosition);
         }
+
+        nodeAtPosition.AddConnection(_parent);
 
         return nodeAtPosition;
     }
@@ -182,11 +182,11 @@ public class LNode_Manager : Singleton<LNode_Manager>
 
         //Untangle any connection crossovers
 
-        NodeList nodesInRange = GetNodesInRange(focusNode.point, 2);
+        NodeList nodesInRange = GetNodesInRange(focusNode.m_point, 2);
 
-        for (int c = 0; c < focusNode.connections.Count; ++c)
+        for (int c = 0; c < focusNode.m_connections.Count; ++c)
         {
-            Node connectedNode = focusNode.connections[c];
+            Node connectedNode = focusNode.m_connections[c];
 
             for (int i = 0; i < nodesInRange.Count; ++i)
             {
@@ -235,17 +235,17 @@ public class LNode_Manager : Singleton<LNode_Manager>
 
     bool TestConnectionIntersectionsWithLine(Node _startNode, Node _endNode, Node _checkNode, out Node _intersectedNode) 
     {
-        Line lineToParent = new Line(_startNode.point, _endNode.point);
-        Line lineBetweenConnections = new Line(_checkNode.point, Vector3.zero);
+        Line lineToParent = new Line(_startNode.m_point, _endNode.m_point);
+        Line lineBetweenConnections = new Line(_checkNode.m_point, Vector3.zero);
 
-        _intersectedNode = _checkNode.connections[0];
-        for (int i = 0; i < _checkNode.connections.Count; ++i)
+        _intersectedNode = _checkNode.m_connections[0];
+        for (int i = 0; i < _checkNode.m_connections.Count; ++i)
         {
             //if (_intersectedNode == _startNode) { continue; }
 
-            _intersectedNode = _checkNode.connections[i];
+            _intersectedNode = _checkNode.m_connections[i];
 
-            lineBetweenConnections.b = _intersectedNode.point;
+            lineBetweenConnections.b = _intersectedNode.m_point;
 
             if (lineToParent.DoesIntersect(lineBetweenConnections, out Vector3 intersection))
             {
@@ -309,6 +309,8 @@ public class LNode_Manager : Singleton<LNode_Manager>
 
     private void OnDrawGizmos()
     {
+        float nodeSize = m_length / 15.0f;
+
         if (m_nodeMap != null)
         {
             foreach (NodeList nodeList in m_nodeMap.Values)
@@ -318,19 +320,24 @@ public class LNode_Manager : Singleton<LNode_Manager>
                     if (showNodes)
                     {
                         Gizmos.color = new Color(0, 0, 1, 0.25f);
-                        Gizmos.DrawSphere(node.point, m_length / 15.0f);
+                        Gizmos.DrawSphere(node.m_point, nodeSize);
                     }
 
                     if (showConnections)
                     {
                         int i = 0;
-                        foreach (Node conn in node.connections)
+                        foreach (Node conn in node.m_connections)
                         {
                             Gizmos.color = Color.blue;
-                            Gizmos.DrawLine(node.point, node.point + ((conn.point - node.point) * 0.5f));
-                            if (showLabels) {Handles.Label(node.point + ((conn.point - node.point) * 0.25f), i.ToString());}
+                            Gizmos.DrawLine(node.m_point, node.m_point + ((conn.m_point - node.m_point) * 0.5f));
+                            //if (showLabels) {Handles.Label(node.m_point + ((conn.m_point - node.m_point) * 0.25f), i.ToString());}
                             ++i;
                         }
+                    }
+
+                    if (showLabels) 
+                    {
+                        Handles.Label(node.m_point + (Vector3.up * nodeSize), node.m_id.ToString());
                     }
                 }
             }
@@ -341,29 +348,21 @@ public class LNode_Manager : Singleton<LNode_Manager>
 //[System.Serializable]
 public class Node
 {
-    public Vector3 point;
-    internal Vector3 forward;
-    internal List<Node> connections;
+    public Vector3 m_point;
+    public uint m_id;
+    internal List<Node> m_connections;
 
-    public Node(Vector3 m_point, Node parent = null) 
+    public Node(Vector3 _point, uint _id) 
     {
-        point = m_point;
-        connections = new List<Node>();
-        if (parent != null)
-        {
-            AddConnection(parent);
-            forward = (point - parent.point).normalized;
-        }
-        else
-        {
-            forward = Vector3.forward;
-        }
+        m_point = _point;
+        m_id = _id;
+        m_connections = new List<Node>();
     }
 
     public void AddConnection(Node node) 
     {
 
-        if (node == this || connections.Contains(node) || Vector3.Distance(point, node.point) >= LNode_Manager.Instance.m_nodeLimitRange.max)
+        if (node == this || m_connections.Contains(node) || Vector3.Distance(m_point, node.m_point) >= LNode_Manager.Instance.m_nodeLimitRange.max)
         {
             //if (Vector3.Distance(point, node.point) >= LNode_Manager.Instance.m_nodeLimitRange.max)
             //{
@@ -373,34 +372,34 @@ public class Node
         }
         else
         {
-            connections.Add(node);
-            node.connections.Add(this);
+            m_connections.Add(node);
+            node.m_connections.Add(this);
         }
 
     }
 
     public void RemoveConnection(Node node) 
     {
-        if (node == this || !connections.Contains(node))
+        if (node == this || !m_connections.Contains(node))
         { return; }
         else
         {
-            node.connections.Remove(this);
-            connections.Remove(node);
+            node.m_connections.Remove(this);
+            m_connections.Remove(node);
         }
     }
 
     public void RemoveConnection(int i) 
     {
-        RemoveConnection(connections[i]);
+        RemoveConnection(m_connections[i]);
     }
 
     public void SortConnections()
     {
         ClockwiseComparer cs = new ClockwiseComparer();
         cs.current = this;
-        cs.start = this.connections[0];
-        connections.Sort(cs);
+        cs.start = this.m_connections[0];
+        m_connections.Sort(cs);
     }
     public class ClockwiseComparer : IComparer<Node>
     {
@@ -410,10 +409,10 @@ public class Node
     
         public int Compare(Node x, Node y)
         {
-            Vector3 incomingDir = Vector3.Normalize(current.point - start.point);
+            Vector3 incomingDir = Vector3.Normalize(current.m_point - start.m_point);
     
-            float xRot = Vector3.SignedAngle(incomingDir, Vector3.Normalize(current.point - x.point), Vector3.up);
-            float yRot = Vector3.SignedAngle(incomingDir, Vector3.Normalize(current.point - y.point), Vector3.up);
+            float xRot = Vector3.SignedAngle(incomingDir, Vector3.Normalize(current.m_point - x.m_point), Vector3.up);
+            float yRot = Vector3.SignedAngle(incomingDir, Vector3.Normalize(current.m_point - y.m_point), Vector3.up);
     
             if (xRot == yRot) return 0;
     
