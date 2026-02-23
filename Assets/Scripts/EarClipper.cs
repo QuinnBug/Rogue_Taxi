@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 using Utility;
@@ -9,11 +10,9 @@ using static UnityEditor.Searcher.SearcherWindow.Alignment;
 
 namespace Earclipping
 {
-	public class EarClipper
+	public static class EarClipper
 	{
-		internal NodeMeshConstructor nmc;
-
-		public Triangle[] GetTriangles(Polygon poly)
+		public static Triangle[] GetTriangles(Polygon poly)
 		{
             List<Vertex> vertices = new List<Vertex>();
 			List<Triangle> triangles = new List<Triangle>();
@@ -35,37 +34,49 @@ namespace Earclipping
 			//Step 1. Store the vertices in a list and we also need to know the next and prev vertex
 			int polyUniqueVertexCount = poly.vertices.Length - 1; //the last and first vertex are the same
 			vertices.Clear();
-			for (int i = 0; i < polyUniqueVertexCount; i++)
+			for (int i = 0; i < polyUniqueVertexCount; ++i)
 			{
 				vertices.Add(new Vertex(poly.vertices[i].point));
 			}
 
 			//Find the next and previous vertex
-			for (int i = 0; i < vertices.Count; i++)
+			for (int i = 0; i < vertices.Count; ++i)
 			{
 				vertices[i].prev = vertices[Lists.ClampListIndex(i - 1, vertices.Count)];
 				vertices[i].next = vertices[Lists.ClampListIndex(i + 1, vertices.Count)];
 			}
 
-			//Step 2. Find the reflex (concave) and convex vertices, and ear vertices
-			for (int i = 0; i < vertices.Count; i++)
+			//If a vertex is part of a straight line, we do not need to consider it in the triangle calculations.
+            for (int i = 0; i < vertices.Count; ++i)
+            {
+				if (FormsParallelLines(vertices[i])) 
+				{
+					vertices[i].next.prev = vertices[i].prev;
+					vertices[i].prev.next = vertices[i].next;
+
+					vertices.RemoveAt(i);
+					--i;
+				}
+            }
+
+            //Step 2. Find the reflex (concave) and convex vertices, and ear vertices
+            for (int i = 0; i < vertices.Count; ++i)
 			{
 				CheckIfReflexOrConvex(vertices[i], poly.center);
 			}
 
 			//Have to find the ears after we have found if the vertex is reflex or convex
 			earVertices.Clear();
-			for (int i = 0; i < vertices.Count; i++)
+			for (int i = 0; i < vertices.Count; ++i)
 			{
 				IsVertexEar(vertices[i], vertices, earVertices, poly);
 			}
 
 			int loopCount = 0;
 			//Step 3. Triangulate!
-
 			while (true)
 			{
-				loopCount++;
+				++loopCount;
 
 				//This means we have just one triangle left
 				if (vertices.Count == 3)
@@ -104,20 +115,19 @@ namespace Earclipping
 				IsVertexEar(earVertexNext, vertices, earVertices, poly);
 			}
 
-			//int d = 0;
-			//foreach (var tri in triangles)
-			//{
-			//	Debug.DrawLine(tri.vertices[0] + Vector3.up * d, tri.vertices[1] + Vector3.up * d, Color.red, 300);
-			//	Debug.DrawLine(tri.vertices[1] + Vector3.up * d, tri.vertices[2] + Vector3.up * d, Color.blue, 300);
-			//	Debug.DrawLine(tri.vertices[2] + Vector3.up * d, tri.vertices[0] + Vector3.up * d, Color.green, 300);
-			//	++d;
-			//}
-
 			return triangles.ToArray();
 		}
 
-		//Check if a vertex if reflex or convex, and add to appropriate list
-		private void CheckIfReflexOrConvex(Vertex v, Vector3 center)
+        private static bool FormsParallelLines(Vertex vertex)
+        {
+            Vector3 lineTo = vertex.point - vertex.prev.point;
+            Vector3 lineFrom = vertex.next.point - vertex.point;
+
+			return Vector3.Cross(lineTo, lineFrom) == Vector3.zero;
+        }
+
+        //Check if a vertex if reflex or convex, and add to appropriate list
+        private static void CheckIfReflexOrConvex(Vertex v, Vector3 center)
 		{
 			v.isReflex = false;
 
@@ -126,11 +136,11 @@ namespace Earclipping
             Vector3 b = v.point;
             Vector3 c = v.next.point;
 
-            v.isReflex = (new Triangle(b, a, c).IsTriangleOrientedClockwise());
+            v.isReflex = new Triangle(b, a, c).IsTriangleOrientedClockwise();
 		}
 	
 		//Check if a vertex is an ear
-		private void IsVertexEar(Vertex v, List<Vertex> vertices, List<Vertex> earVertices, Polygon poly)
+		private static void IsVertexEar(Vertex v, List<Vertex> vertices, List<Vertex> earVertices, Polygon poly)
 		{
 			//A reflex vertex cant be an ear!
 			if (v.isReflex)
@@ -235,6 +245,24 @@ namespace Earclipping
 			return (a > 0f && a < 1f && b > 0f && b < 1f && c > 0f && c < 1f);
 		}
 
+		public bool AdjacentTo(Triangle other) 
+		{
+			int sharedVertexCount = 0;
+            foreach (var v1 in vertices)
+            {
+                foreach (var v2 in other.vertices)
+                {
+					if (v1 == v2)
+					{
+						++sharedVertexCount;
+						break;
+					}
+                }
+            }
+
+			return sharedVertexCount == 2; //|| sharedVertexCount == 2;
+		}
+
 		public void DebugDraw(Color color, float time) 
 		{
             for (int i = 0; i < 3; i++)
@@ -243,7 +271,18 @@ namespace Earclipping
 				Debug.DrawLine(vertices[i], vertices[j], color, time);
             }
 		}
-	}
+
+        internal Vector3 Center()
+        {
+            Vector3 center = new Vector3();
+			foreach (var v in vertices) 
+			{
+				center += v;
+			}
+			center /= vertices.Length;
+			return center;
+        }
+    }
 
 	[System.Serializable]
 	public class Polygon

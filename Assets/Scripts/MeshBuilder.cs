@@ -2,6 +2,7 @@ using Earclipping;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.AI.Navigation;
 using UnityEngine;
 using Utility;
 using static UnityEditor.Searcher.SearcherWindow.Alignment;
@@ -20,7 +21,6 @@ public class MeshBuilder : MonoBehaviour
     public GameObject[] roads;
 
     private bool spawnMesh;
-    private EarClipper clipper;
     private NodeMeshConstructor nmc;
 
     // Start is called before the first frame update
@@ -28,7 +28,6 @@ public class MeshBuilder : MonoBehaviour
     {
         meshes = null;
         roads = null;
-        clipper = new EarClipper();
         nmc = FindAnyObjectByType<NodeMeshConstructor>();
     }
 
@@ -38,9 +37,9 @@ public class MeshBuilder : MonoBehaviour
         if (nmc.meshCreated && meshes == null)
         {
             List<Polygon> polygons = new List<Polygon>();
-            foreach (var polyList in nmc.polygons.Values)
+            foreach (var poly in nmc.m_nodePolygons.Values)
             {
-                polygons.AddRange(polyList);
+                polygons.Add(poly);
             }
             StartCoroutine(GenerateMeshes(polygons));
         }
@@ -70,6 +69,8 @@ public class MeshBuilder : MonoBehaviour
             roads[i].GetComponent<MeshRenderer>().sharedMaterials = mats.ToArray();
 
             roads[i].GetComponent<MeshCollider>().sharedMesh = meshes[i];
+
+            roads[i].name = "Road(" + i + ")";
         }
     }
 
@@ -135,8 +136,7 @@ public class MeshBuilder : MonoBehaviour
     private Mesh BuildMeshFromPoly(Polygon poly) 
     {
         Mesh mesh = new Mesh();
-        Triangle[] polyTris = clipper.GetTriangles(poly);
-
+        Triangle[] polyTris = EarClipper.GetTriangles(poly);
 
         List<Vector3> verts = new List<Vector3>();
         List<int> idxList = new List<int>();
@@ -199,7 +199,7 @@ public class MeshBuilder : MonoBehaviour
                 }
                 else //Ceiling
                 {
-                    polyTris = clipper.GetTriangles(linkedPoly);
+                    polyTris = EarClipper.GetTriangles(linkedPoly);
 
                     foreach (Triangle tri in polyTris)
                     {

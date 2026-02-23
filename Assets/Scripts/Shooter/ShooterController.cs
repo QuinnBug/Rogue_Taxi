@@ -7,7 +7,7 @@ public class ShooterController : MonoBehaviour
     public GameObject m_body;
     public Rigidbody m_physics;
     [Space]
-    public Range m_headTurnRange;
+    public Range<float> m_headTurnRange;
     public PlayerStats m_stats;
 
     private Vector2 m_turnInput;
@@ -28,7 +28,7 @@ public class ShooterController : MonoBehaviour
     void Update()
     {
         //Body movement and rotation
-        Vector3 movement = new Vector3(m_moveInput.x, 0, m_moveInput.y) * m_stats.moveSpeed * Time.deltaTime;
+        Vector3 movement = new Vector3(m_moveInput.x, 0, m_moveInput.y) * m_stats.accelerationRate * Time.deltaTime;
         movement = m_body.transform.rotation * movement;
         m_physics.AddForce(movement);
 

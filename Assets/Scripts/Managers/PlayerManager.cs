@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -36,7 +38,7 @@ public class PlayerManager : Singleton<PlayerManager>
 
         //movement updates
         movement.active = active;
-        movement.moveSpeed = stats.moveSpeed;
+        movement.moveSpeed = stats.accelerationRate;
         movement.turnSpeed = stats.turnSpeed;
         movement.fuel = stats.currentFuel;
         movement.fuelDrain = stats.fuelDrain;
@@ -59,7 +61,7 @@ public class UiPointer
     public float turnSpeed;
     public float moveSpeed;
     public Image pointer;
-    public Range xScreenRange, yScreenRange;
+    public Range<float> xScreenRange, yScreenRange;
     public float pointerDisplayRange;
     public Color fullColour;
     public Color emptyColour;
@@ -107,26 +109,3 @@ public class UiPointer
     }
 }
 
-[System.Serializable]
-public struct Range
-{
-    public float min;
-    public float max;
-
-    public Range(float _min, float _max)
-    {
-        min = _min;
-        max = _max;
-
-        if (min > max)
-        {
-            min = _max;
-            max = _min;
-        }
-    }
-
-    public bool Contains(float test) 
-    {
-        return test >= min && test <= max;
-    }
-}

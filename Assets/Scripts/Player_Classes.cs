@@ -5,7 +5,9 @@ using UnityEngine;
 [System.Serializable]
 public struct PlayerStats 
 {
-    public float moveSpeed;
+    public float accelerationRate;
+    public float decelerationRate;
+    public Range<float> speedLimits;
     public float turnSpeed;
 
     public int currentHealth;

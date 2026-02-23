@@ -18,8 +18,6 @@ public class NodeMeshConstructor : MonoBehaviour
     public float db_timePerNode;
     [Space]
     public bool db_drawPolygons;
-    [UnityEngine.Range(0,200)]
-    public int db_focusedPolyIdx = 0;
     public bool db_drawPoints;
 
     [Header("Values")]
@@ -33,14 +31,14 @@ public class NodeMeshConstructor : MonoBehaviour
     public float m_extrusionDepth;
 
     internal bool meshCreated;
-    internal Dictionary<uint, List<Polygon>> polygons = null;
+    internal Dictionary<Node, Polygon> m_nodePolygons = null;
 
     private int m_nodeCounter = 0;
 
     // Start is called before the first frame update
     void Start()
     {
-        polygons = null;
+        m_nodePolygons = null;
 
         meshCreated = false;
     }
@@ -50,7 +48,7 @@ public class NodeMeshConstructor : MonoBehaviour
     {
         if (db_run) 
         { 
-            if (s_nodeManager.nodeGenDone && polygons == null && !meshCreated)
+            if (s_nodeManager.nodeGenDone && m_nodePolygons == null && !meshCreated)
             {
                 db_run = false;
                 StartCoroutine(CreatePolygonFromNodes());
@@ -60,7 +58,7 @@ public class NodeMeshConstructor : MonoBehaviour
 
     IEnumerator CreatePolygonFromNodes() 
     {
-        polygons = new Dictionary<uint, List<Polygon>>();
+        m_nodePolygons = new Dictionary<Node, Polygon>();
 
         m_nodeCounter = 0;
 
@@ -68,8 +66,10 @@ public class NodeMeshConstructor : MonoBehaviour
         {
             if (node.m_connections.Count == 0) continue;
 
-            polygons.TryAdd(node.m_id, new List<Polygon>());
-            polygons[node.m_id].Add(PolyFromNode(node));
+            if(!m_nodePolygons.TryAdd(node, PolyFromNode(node)))
+            {
+                Debug.LogError("[NMC] Failed to add node to nodePolygons dictionary");
+            }
 
             if (++m_nodeCounter % db_nodesPerStep == 0)
             {
@@ -101,8 +101,8 @@ public class NodeMeshConstructor : MonoBehaviour
             points[3] = nodeLines[0].a;
 
             //middle points
-            points[1] = farPoint + (rotation * (Vector3.right * m_roadWidth * 0.75f));
-            points[2] = farPoint + (rotation * (-Vector3.right * m_roadWidth * 0.75f));
+            points[1] = farPoint + (rotation * (Vector3.right * m_roadWidth));
+            points[2] = farPoint + (rotation * (-Vector3.right * m_roadWidth));
 
             nodeLines.Add(new Line(points[0], points[1]));
             nodeLines.Add(new Line(points[1], points[2]));
@@ -411,30 +411,22 @@ public class NodeMeshConstructor : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        if (polygons != null && (db_drawPolygons || db_drawPoints))
+        if (m_nodePolygons != null && (db_drawPolygons || db_drawPoints))
         {
-            foreach (List<Polygon> polyList in polygons.Values)
+            foreach (Polygon polyList in m_nodePolygons.Values)
             {
-                for (int i = 0; i < polyList.Count; i++)
+                for (int j = 0; j < polyList.vertices.Length; j++)
                 {
-                    for (int j = 0; j < polyList[i].vertices.Length; j++)
+                    if (j > 0 && db_drawPolygons)
                     {
-                        if (j > 0 && db_drawPolygons)
-                        {
-                            Gizmos.color = Color.cyan;
-                            Gizmos.DrawLine(polyList[i].vertices[j].point, polyList[i].vertices[j - 1].point);
-                        }
+                        Gizmos.color = Color.cyan;
+                        Gizmos.DrawLine(polyList.vertices[j].point, polyList.vertices[j - 1].point);
+                    }
 
-                        if (db_drawPoints)
-                        {
-                            Gizmos.color = new Color(1, 0, 0, 0.1f);
-                            Gizmos.DrawSphere(polyList[i].vertices[j].point, 0.2f);
-
-                            if (db_focusedPolyIdx == i)
-                            {
-                                Handles.Label(polyList[i].vertices[j].point + (Vector3.up * 0.1f * (j + 1)), j.ToString());
-                            }
-                        }
+                    if (db_drawPoints)
+                    {
+                        Gizmos.color = new Color(1, 0, 0, 0.1f);
+                        Gizmos.DrawSphere(polyList.vertices[j].point, 0.2f);
                     }
                 }
             }

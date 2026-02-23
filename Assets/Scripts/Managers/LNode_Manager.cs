@@ -24,7 +24,7 @@ public class LNode_Manager : Singleton<LNode_Manager>
     public int angle;
     public int m_length;
     //below the minimum the nodes combine, above the maximum connections are broken
-    public Range m_nodeLimitRange;
+    public Range<float> m_nodeLimitRange;
     public bool clampValues = false;
     [Space]
     public int nodesPerStep = 50;
