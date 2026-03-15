@@ -21,14 +21,14 @@ public class MeshBuilder : MonoBehaviour
     public GameObject[] roads;
 
     private bool spawnMesh;
-    private NodeMeshConstructor nmc;
+    private NodePolygonGenerator nmc;
 
     // Start is called before the first frame update
     void Start()
     {
         meshes = null;
         roads = null;
-        nmc = FindAnyObjectByType<NodeMeshConstructor>();
+        nmc = FindAnyObjectByType<NodePolygonGenerator>();
 
         Event_Manager.Instance.AddListener(E_Event.RoadPolygons, E_Action.Finished, StartMeshGeneration);
     }

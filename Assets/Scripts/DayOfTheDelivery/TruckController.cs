@@ -30,6 +30,9 @@ public class TruckController : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+        m_physics.useGravity = false;
+        Event_Manager.Instance.AddListener(E_Event.RoadMeshes, E_Action.Finished, EnableInput);
     }
 
     // Update is called once per frame
@@ -86,6 +89,11 @@ public class TruckController : MonoBehaviour
 
             m_physics.linearVelocity = Vector3.Lerp(m_physics.linearVelocity, Vector3.zero, m_fVelocityDrag);
         }
+    }
+
+    void EnableInput() 
+    {
+        m_physics.useGravity = true;
     }
 
     private void AccelInputHandling()

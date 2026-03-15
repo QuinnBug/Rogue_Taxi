@@ -567,8 +567,8 @@ MonoBehaviour:
     perlinHeightLimit: 6
     vSize: {x: 10, y: 10}
   worldStart: {x: -1000, y: 0, z: -1000}
-  randomOffset: {x: 0, y: 0}
-  terrainSize: {x: 10, y: 10}
+  perlinOffset: {x: 0, y: 0}
+  m_tileCounts: {x: 0, y: 0}
   d_tilesPerLoop: 50
   d_timePerLoop: 0.0001
 --- !u!4 &980056745
@@ -1184,7 +1184,7 @@ MonoBehaviour:
     axiom: o
     finalString: 'f[ffff[<<ffflt]<ff[rt]]<ff[>>ffffrt]>ff[rt]'
     randomRuleOutput: 1
-  count: 5
+  count: 10
   angle: 45
   m_length: 150
   m_nodeLimitRange:
@@ -1223,14 +1223,15 @@ MonoBehaviour:
   db_run: 1
   db_nodesPerStep: 50
   db_timePerNode: 0.01
-  db_drawPolygons: 0
+  db_drawPolygons: 1
   db_drawPoints: 0
   s_nodeManager: {fileID: 2109595310}
   m_roadWidth: 15
   m_nodeRadius: 35
   m_doubleSided: 0
+  m_fGroundOffset: 1
   m_extrude: 1
-  m_extrusionDepth: -1
+  m_extrusionDepth: -2
 --- !u!114 &2109595313
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1269,15 +1270,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Terrain_Manager
   tilePrefab: {fileID: 2166792517796061570, guid: 3d9ec648d37085b49a4fc6ed7bc748c3, type: 3}
   tileSettings:
-    size: {x: 50, y: 50}
-    perlinZoom: 0.01
+    size: {x: 100, y: 100}
+    perlinZoom: 0.0025
     perlinHeight: 10
     perlinHeightLimit: 5
-    vSize: {x: 5, y: 5}
-  worldStart: {x: -50, y: 0, z: -50}
-  randomOffset: {x: 0, y: 0}
-  terrainSize: {x: 20, y: 20}
-  d_tilesPerLoop: 100
+    vSize: {x: 20, y: 20}
+  worldStart: {x: 0, y: 0, z: 0}
+  perlinOffset: {x: 0, y: 0}
+  m_tileCounts: {x: 0, y: 0}
+  d_tilesPerLoop: 40
   d_timePerLoop: 0.01
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

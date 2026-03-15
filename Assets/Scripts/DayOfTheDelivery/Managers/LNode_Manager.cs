@@ -265,6 +265,11 @@ public class LNode_Manager : Singleton<LNode_Manager>
             );
     }
 
+    public Vector3 MapKeyToWorldPos(Vector2Int _key) 
+    {
+        return new Vector3(_key.x, 0, _key.y) * m_nodeLimitRange.max;
+    }
+
     public NodeList GetNodesInRange(Vector3 _position, int _range) 
     {
         NodeList nodeList = new NodeList();

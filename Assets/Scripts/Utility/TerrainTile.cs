@@ -15,7 +15,7 @@ public struct TileSettings
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
 public class TerrainTile : MonoBehaviour
 {
-    public Vector2Int tilePosition;
+    public Vector2Int tileCoords;
     [Space]
     public bool m_ShowGrid = true;
     public TileSettings settings;
@@ -38,15 +38,16 @@ public class TerrainTile : MonoBehaviour
         {
             for (int x = 0; x <= settings.size.x; x++, i++)
             {
-                float y = (Mathf.PerlinNoise(
-                    (perlinOffset.x + x + (tilePosition.x * settings.size.x)) * settings.perlinZoom,
-                    (perlinOffset.y + z + (tilePosition.y * settings.size.y)) * settings.perlinZoom) - 0.5f)
-                    * settings.perlinHeight;
+                vertices[i] = new Vector3(x * settings.vSize.x, 0, z * settings.vSize.y);
 
-                if (y > settings.perlinHeightLimit) y = settings.perlinHeightLimit;
-                else if (y < -settings.perlinHeightLimit) y = -settings.perlinHeightLimit;
+                vertices[i].y = Terrain_Manager.Instance.GetHeightAtPoint(
+                    new Vector3(
+                        vertices[i].x + transform.position.x,
+                        0,
+                        vertices[i].z + transform.position.z)
+                    );
 
-                vertices[i] = new Vector3(x * settings.vSize.x, y, z * settings.vSize.y);
+                
                 uv[i] = new Vector2((float)x / settings.size.x, (float)z / settings.size.y);
                 tangents[i] = tangent;
             }

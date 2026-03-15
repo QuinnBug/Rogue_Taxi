@@ -9,7 +9,7 @@ using Utility;
 using NUnit.Framework;
 using UnityEditor.Experimental.GraphView;
 
-public class NodeMeshConstructor : MonoBehaviour
+public class NodePolygonGenerator : MonoBehaviour
 {
     [Header("Debug")]
     public bool db_run = false;
@@ -26,6 +26,8 @@ public class NodeMeshConstructor : MonoBehaviour
     public float m_roadWidth;
     public float m_nodeRadius;
     public bool m_doubleSided;
+    [Space]
+    public float m_fGroundOffset;
     [Space]
     public bool m_extrude;
     public float m_extrusionDepth;
@@ -180,6 +182,18 @@ public class NodeMeshConstructor : MonoBehaviour
             }
         }
         
+        //Set point heights to the height of the perlin noise
+        foreach (var line in nodeLines) 
+        {
+            var a = line.a;
+            var b = line.b;
+
+            a.y = Terrain_Manager.Instance.GetHeightAtPoint(line.a) + m_fGroundOffset;
+            b.y = Terrain_Manager.Instance.GetHeightAtPoint(line.b) + m_fGroundOffset;
+            
+            line.a = a; 
+            line.b = b;
+        }
 
         Polygon poly = new Polygon(nodeLines, node.m_point);
 
