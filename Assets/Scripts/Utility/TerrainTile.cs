@@ -12,7 +12,7 @@ public struct TileSettings
     public Vector2 vSize;
 }
 
-[RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
+[RequireComponent(typeof(MeshFilter), typeof(MeshRenderer), typeof(MeshCollider))]
 public class TerrainTile : MonoBehaviour
 {
     public Vector2Int tilePosition;
@@ -81,21 +81,21 @@ public class TerrainTile : MonoBehaviour
         meshCollider.sharedMesh = mesh;
     }
 
-    private void OnDrawGizmosSelected()
-    {
-        if (m_ShowGrid)
-        {
-            m_ShowGrid = false;
-            GenerateMesh();
-        }
+    //private void OnDrawGizmosSelected()
+    //{
+    //    if (m_ShowGrid)
+    //    {
+    //        m_ShowGrid = false;
+    //        GenerateMesh();
+    //    }
 
-        //if (vertices != null)
-        //{
-        //    Gizmos.color = Color.black;
-        //    for (int i = 0; i < vertices.Length; i++)
-        //    {
-        //        Gizmos.DrawSphere(transform.TransformPoint(vertices[i]), 0.1f);
-        //    }
-        //}
-    }
+    //    //if (vertices != null)
+    //    //{
+    //    //    Gizmos.color = Color.black;
+    //    //    for (int i = 0; i < vertices.Length; i++)
+    //    //    {
+    //    //        Gizmos.DrawSphere(transform.TransformPoint(vertices[i]), 0.1f);
+    //    //    }
+    //    //}
+    //}
 }

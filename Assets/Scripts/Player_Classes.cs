@@ -9,13 +9,10 @@ public struct PlayerStats
     public float decelerationRate;
     public Range<float> speedLimits;
     public float turnSpeed;
+    public float turnResetRate;
 
-    public int currentHealth;
-    public int maxHealth;
-
-    public int currentAmmo;
-    public int maxAmmo;
-    public float shotsPerSecond;
+    public float fTurnLimit;
+    public float fWheelLimit;
 
     public float currentFuel;
     public float maxFuel;
@@ -24,8 +21,6 @@ public struct PlayerStats
 
     public void Init() 
     {
-        currentHealth = maxHealth;
-        currentAmmo = maxAmmo;
         currentFuel = maxFuel;
     }
 }
