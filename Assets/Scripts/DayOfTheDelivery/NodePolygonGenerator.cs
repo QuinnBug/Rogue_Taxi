@@ -1,13 +1,14 @@
+using Earclipping;
+using NUnit.Framework;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using Random = UnityEngine.Random;
-using Earclipping;
 using UnityEditor;
-using Utility;
-using NUnit.Framework;
 using UnityEditor.Experimental.GraphView;
+using UnityEngine;
+using Utility;
+using static Unity.Cinemachine.IInputAxisOwner.AxisDescriptor;
+using Random = UnityEngine.Random;
 
 public class NodePolygonGenerator : MonoBehaviour
 {
@@ -31,6 +32,8 @@ public class NodePolygonGenerator : MonoBehaviour
     [Space]
     public bool m_extrude;
     public float m_extrusionDepth;
+    [Space]
+    public float m_maxLineLength = 1.0f;
 
     internal Dictionary<Node, Polygon> m_nodePolygons = null;
 
@@ -181,7 +184,16 @@ public class NodePolygonGenerator : MonoBehaviour
                 }
             }
         }
-        
+
+        //List<Line> splitLines = new List<Line>();
+
+        //foreach (Line line in nodeLines)
+        //{
+        //    splitLines.AddRange(SplitLineByMaxLength(line));
+        //}
+
+        //nodeLines = splitLines;
+
         //Set point heights to the height of the perlin noise
         foreach (var line in nodeLines) 
         {
@@ -217,6 +229,7 @@ public class NodePolygonGenerator : MonoBehaviour
             UpdateNodeToConnectionLine(_node, lines[0], true);
             UpdateNodeToConnectionLine(_node, lines[2], false);
 
+            
             if (nodeLines.Count > 0)
             {
                 //this connects the last point from the previous segment to the start point of this section
@@ -238,6 +251,26 @@ public class NodePolygonGenerator : MonoBehaviour
         }
 
         return nodeLines;
+    }
+
+    private List<Line> SplitLineByMaxLength(Line line)
+    {
+        List<Line> results = new List<Line>();
+
+        if (line.Length() < m_maxLineLength) { results.Add(line); return results; }
+
+        int newLineCount = Mathf.CeilToInt(line.Length() / m_maxLineLength);
+
+        Vector3 nextLineStart = line.a;
+        for (int i = 1; i <= newLineCount; i++) 
+        { 
+            float percent = (float)i / newLineCount;
+            Vector3 nextLineEnd = Vector3.Lerp(line.a, line.b, percent);
+            results.Add(new Line(nextLineStart, nextLineEnd));
+            nextLineStart = nextLineEnd;
+        }
+
+        return results;
     }
 
     private Vector3[] GetNodeToConnectionPolygonCorners(Node _node, Node _conn) 
@@ -432,8 +465,8 @@ public class NodePolygonGenerator : MonoBehaviour
 
                     if (db_drawPoints)
                     {
-                        Gizmos.color = new Color(1, 0, 0, 0.1f);
-                        Gizmos.DrawSphere(polyList.vertices[j].point, 0.2f);
+                        Gizmos.color = new Color(1, 0, 0, 1.0f);
+                        Gizmos.DrawSphere(polyList.vertices[j].point, 0.3f);
                     }
                 }
             }

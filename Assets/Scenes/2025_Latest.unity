@@ -1153,8 +1153,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2a12f3a51a95fd24d885f70d2ba5fe53, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  showConnections: 1
-  showNodes: 1
+  showConnections: 0
+  showNodes: 0
   showLabels: 0
   lSys:
     rules:
@@ -1223,15 +1223,16 @@ MonoBehaviour:
   db_run: 1
   db_nodesPerStep: 50
   db_timePerNode: 0.01
-  db_drawPolygons: 1
+  db_drawPolygons: 0
   db_drawPoints: 0
   s_nodeManager: {fileID: 2109595310}
   m_roadWidth: 15
   m_nodeRadius: 35
   m_doubleSided: 0
-  m_fGroundOffset: 1
-  m_extrude: 1
+  m_fGroundOffset: 0.2
+  m_extrude: 0
   m_extrusionDepth: -2
+  m_maxLineLength: 10
 --- !u!114 &2109595313
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1244,12 +1245,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 16d624f6099ac59459896336159cbb13, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  d_SecondsPerLoop: 0.01
+  d_SecondsPerLoop: 0.1
   d_PolygonsPerLoop: 10
   prefabObj: {fileID: 1431621214544958366, guid: ed4c3bfba5687d44cb7ea761092ee1a8, type: 3}
   roadHolder: {fileID: 381227247}
   materialPallette:
-  - {fileID: -876546973899608171, guid: b6ee00bc0c1ddf047b3ce5b589c8bbfa, type: 3}
+  - {fileID: 2100000, guid: befbd187a7aa213438ccfe9d6a6fd27a, type: 2}
   - {fileID: 2100000, guid: 00f93ad13aefe3947bffffddf50fc46f, type: 2}
   textureScales:
   - {x: 1, y: 1}
@@ -1270,11 +1271,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Terrain_Manager
   tilePrefab: {fileID: 2166792517796061570, guid: 3d9ec648d37085b49a4fc6ed7bc748c3, type: 3}
   tileSettings:
-    size: {x: 100, y: 100}
-    perlinZoom: 0.0025
+    size: {x: 50, y: 50}
+    perlinZoom: 0.0035
     perlinHeight: 10
     perlinHeightLimit: 5
-    vSize: {x: 20, y: 20}
+    vSize: {x: 10, y: 10}
   worldStart: {x: 0, y: 0, z: 0}
   perlinOffset: {x: 0, y: 0}
   m_tileCounts: {x: 0, y: 0}

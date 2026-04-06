@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class Terrain_Manager : Singleton<Terrain_Manager>
 {
@@ -12,7 +13,7 @@ public class Terrain_Manager : Singleton<Terrain_Manager>
     [Space]
     [SerializeField]
     private Vector2 perlinOffset;
-    private List<TerrainTile> tiles = new List<TerrainTile>();
+    private Dictionary<Vector2Int, TerrainTile> tiles = new Dictionary<Vector2Int, TerrainTile>();
     public Vector2Int m_tileCounts;
     [Space]
     public int d_tilesPerLoop = 50;
@@ -54,6 +55,7 @@ public class Terrain_Manager : Singleton<Terrain_Manager>
         upperX += 1;
         upperY += 1;
 
+        //QWN: is this just wrong?
         Vector3 bottomLeft = LNode_Manager.Instance.MapKeyToWorldPos(new Vector2Int(lowerX, lowerY));
         Vector3 topRight = LNode_Manager.Instance.MapKeyToWorldPos(new Vector2Int(upperX, upperY));
         Vector3 difference = topRight - bottomLeft;
@@ -80,7 +82,7 @@ public class Terrain_Manager : Singleton<Terrain_Manager>
         tile.perlinOffset = perlinOffset;
         tile.GenerateMesh();
 
-        tiles.Add(tile);
+        tiles.Add(_position, tile);
     }
 
     private IEnumerator TerrainCoroutine()
@@ -114,5 +116,15 @@ public class Terrain_Manager : Singleton<Terrain_Manager>
         else if (y < -tileSettings.perlinHeightLimit) y = -tileSettings.perlinHeightLimit;
 
         return y;
+    }
+
+    public TerrainTile GetTileAtPoint(Vector3 point)
+    {
+        Vector2Int tileCoord = new Vector2Int(
+            Mathf.FloorToInt(point.x / tileSettings.size.x),
+            Mathf.FloorToInt(point.y / tileSettings.size.y)
+            );
+
+        return tiles[tileCoord];
     }
 }

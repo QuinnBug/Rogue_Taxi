@@ -2,6 +2,7 @@ using Earclipping;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.AI.Navigation;
 using UnityEngine;
 using Utility;
@@ -21,14 +22,14 @@ public class MeshBuilder : MonoBehaviour
     public GameObject[] roads;
 
     private bool spawnMesh;
-    private NodePolygonGenerator nmc;
+    private NodePolygonGenerator nodePolyGen;
 
     // Start is called before the first frame update
     void Start()
     {
         meshes = null;
         roads = null;
-        nmc = FindAnyObjectByType<NodePolygonGenerator>();
+        nodePolyGen = FindAnyObjectByType<NodePolygonGenerator>();
 
         Event_Manager.Instance.AddListener(E_Event.RoadPolygons, E_Action.Finished, StartMeshGeneration);
     }
@@ -36,10 +37,11 @@ public class MeshBuilder : MonoBehaviour
     void StartMeshGeneration() 
     {
         List<Polygon> polygons = new List<Polygon>();
-        foreach (var poly in nmc.m_nodePolygons.Values)
+        foreach (var poly in nodePolyGen.m_nodePolygons.Values)
         {
             polygons.Add(poly);
         }
+
         StartCoroutine(GenerateMeshes(polygons));
     }
 
@@ -89,28 +91,18 @@ public class MeshBuilder : MonoBehaviour
             int vertIdxB = idxList[triIdx+1];
             int vertIdxC = idxList[triIdx+2];
 
-            if (vertIdxA >= verts.Length) 
-            {
-                Debug.Log("[MB] A:" + vertIdxA);
-            }
-            if (vertIdxB >= verts.Length)
-            {
-                Debug.Log("[MB] B:" + vertIdxB);
-            }
-            if (vertIdxC >= verts.Length)
-            {
-                Debug.Log("[MB] C:" + vertIdxC);
-            }
             Vector3 n = Geometry.GetNormalOfPoints(verts[vertIdxA], verts[vertIdxB], verts[vertIdxC]);
             
-            normals[vertIdxA] += n;
-            normals[vertIdxB] += n;
-            normals[vertIdxC] += n;
+            //normals[vertIdxA] += n;
+            //normals[vertIdxB] += n;
+            //normals[vertIdxC] += n;
         }
 
         for (int j = 0; j < normals.Length; j++)
         {
-            normals[j].Normalize();
+            normals[j] = Vector3.up;
+            //normals[j].Normalize();
+            //Debug.DrawLine(verts[j], verts[j] + normals[j], Color.white, 9999);
         }
 
         return normals;
@@ -142,6 +134,10 @@ public class MeshBuilder : MonoBehaviour
         Mesh mesh = new Mesh();
         Triangle[] polyTris = EarClipper.GetTriangles(poly);
 
+        // Bend to terrain
+        polyTris = AlignTrisToTerrrain(polyTris);
+
+        // Vertices collection
         List<Vector3> verts = new List<Vector3>();
         List<int> idxList = new List<int>();
 
@@ -240,6 +236,60 @@ public class MeshBuilder : MonoBehaviour
         }
 
         return mesh;
+    }
+
+    private Triangle[] AlignTrisToTerrrain(Triangle[] polyTris)
+    {
+        List<Triangle> testTris = polyTris.ToList();
+        List<Triangle> outputTris = new List<Triangle>();
+
+        int remainingAttempts = 2000;
+        while (testTris.Count > 0 && remainingAttempts > 0) 
+        {
+            //take a tri out of the list
+            Triangle tri = testTris[0];
+            testTris.RemoveAt(0);
+
+            bool newTris = false;
+
+            //For each line
+            for (int i = 0; i < 3; ++i)
+            {
+                int j = Lists.ClampListIndex(i + 1, 3);
+
+                Vector3 pointDiff = tri.vertices[j] - tri.vertices[i];
+                Line testLine = new Line(tri.vertices[i], tri.vertices[j]);
+
+                //if it needs to be split
+                if (testLine.DoesNotAlignToGround(nodePolyGen.m_fGroundOffset))
+                {
+                    //Add the 2 new tris to the list 
+                    Vector3 splitPoint = Vector3.Lerp(tri.vertices[i], tri.vertices[j], 0.5f);
+                    splitPoint.y = Terrain_Manager.Instance.GetHeightAtPoint(splitPoint) + nodePolyGen.m_fGroundOffset;
+                    int k = Lists.ClampListIndex(i + 2, 3);
+                    testTris.Add(new Triangle(tri.vertices[i], splitPoint, tri.vertices[k]));
+                    testTris.Add(new Triangle(tri.vertices[k], splitPoint, tri.vertices[j]));
+
+                    //use up an attempt and continue
+                    newTris = true;
+                    --remainingAttempts;
+                    break;
+                }
+            }
+
+            //if the triangle does not need to be split
+            if (!newTris)
+            {
+                outputTris.Add(tri);
+            }
+        }
+
+        if (remainingAttempts <= 0)
+        {
+            Debug.Log("[MB] too many alignment attempts");
+        }
+
+        return outputTris.ToArray();
     }
 
     private Vector2[] CalculateUVs(List<Vector3> points, List<Vector3> normals, Vector2 textureScale)

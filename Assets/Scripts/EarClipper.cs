@@ -123,7 +123,7 @@ namespace Earclipping
             Vector3 lineTo = vertex.point - vertex.prev.point;
             Vector3 lineFrom = vertex.next.point - vertex.point;
 
-			return Vector3.Cross(lineTo, lineFrom) == Vector3.zero;
+			return Vector3.Cross(lineTo, lineFrom).magnitude <= 0.0001f;
         }
 
         //Check if a vertex if reflex or convex, and add to appropriate list

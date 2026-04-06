@@ -770,6 +770,28 @@ public class Line
 
         Debug.DrawLine(pointA, pointB, color, duration);
     }
+
+    internal bool DoesNotAlignToGround(float groundOffset = 0.5f)
+    {
+        const int checkFidelity = 200;
+        const float offsetAcceptableRange = 0.1f;
+
+        for (float i = 0; i < checkFidelity; ++i)
+        {
+            Vector3 testPoint = Vector3.Lerp(a, b, 1.0f / i);
+            float groundY = Terrain_Manager.Instance.GetHeightAtPoint(testPoint);
+
+            if (
+                testPoint.y <= groundY + (groundOffset * (1 - offsetAcceptableRange)) ||
+                testPoint.y >= groundY + (groundOffset * (1 + offsetAcceptableRange))
+                )
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
 
 public class Event 
