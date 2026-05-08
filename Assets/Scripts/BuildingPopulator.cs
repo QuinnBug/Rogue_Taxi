@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Random = UnityEngine.Random;
 
 public class BuildingPopulator : Singleton<BuildingPopulator>
@@ -11,97 +12,104 @@ public class BuildingPopulator : Singleton<BuildingPopulator>
     [Space]
     public GameObject[] prefabs;
     [Space]
-    public Vector2Int gridSize;
-    public Vector3 spaceSize;
-    public Vector3 startPoint;
+
     [Space]
     public MeshBuilder mb;
+    public LNode_Manager lnm;
+    public NodePolygonGenerator npg;
 
-    private GameObject[][] buildings;
+    private Dictionary<int, List<GameObject>> buildingsMap;
     private LayerMask layerMask;
     private int lastPrefab;
 
-    internal bool spawnBuildings;
     internal int stepIterations = 0;
 
     private void Start()
     {
         lastPrefab = -1;
-        layerMask = 1 << LayerMask.NameToLayer("Road");
-        spawnBuildings = false;
-        spaceSize.y = 100;
+        layerMask = 1 << LayerMask.NameToLayer("Building");
+
+        Event_Manager.Instance.AddListener(E_Event.RoadMeshes, E_Action.Finished, StartBuildingProcess);
     }
 
 
-    private void Update()
+    private void StartBuildingProcess()
     {
-        if (spawnBuildings)
-        {
-            Vector3[] bounds = FindLowestPoint();
-
-            startPoint = bounds[0] - (spaceSize * 3);
-            startPoint.y = bounds[0].y;
-
-            Vector3 gridSizeFloat = ((bounds[1] + (spaceSize*3)) - startPoint);
-            gridSize.x = Mathf.CeilToInt(gridSizeFloat.x / spaceSize.x);
-            gridSize.y = Mathf.CeilToInt(gridSizeFloat.z / spaceSize.z);
-
-            StartCoroutine(PlaceBuildings());
-            spawnBuildings = false;
-        }
-    }
-
-    private Vector3[] FindLowestPoint()
-    {
-        Vector3 lowestPoint = Vector3.positiveInfinity;
-        Vector3 highestPoint = Vector3.negativeInfinity;
-
-        foreach (Mesh mesh in mb.meshes)
-        {
-            foreach (Vector3 vertex in mesh.vertices)
-            {
-                if (vertex.x < lowestPoint.x) lowestPoint.x = vertex.x;
-                if (vertex.z < lowestPoint.z) lowestPoint.z = vertex.z;
-
-                if (vertex.x > highestPoint.x) highestPoint.x = vertex.x;
-                if (vertex.z > highestPoint.z) highestPoint.z = vertex.z;
-
-            }
-        }
-
-        lowestPoint.y = highestPoint.y = startPoint.y;
-
-        return new Vector3[] { lowestPoint, highestPoint };
+        StartCoroutine(PlaceBuildings());
     }
 
     IEnumerator PlaceBuildings() 
     {
-        buildings = new GameObject[gridSize.x][];
-        Vector3 position = startPoint;
+        List<GameObject> buildings = new List<GameObject>();
 
-        for (int x = 0; x < gridSize.x; x++)
+        // I need to get each node connection
+        // Take each side of the line and for each
+        // then calculate the length of the line
+        // place a building, subtract it's size from the length
+        // repeat until no more size.
+
+        foreach (var node in lnm.AllNodes())
         {
-            buildings[x] = new GameObject[gridSize.y];
-            for (int y = 0; y < gridSize.y; y++)
+            foreach (var conn in node.m_connections)
             {
-                //idx - 
-                position = startPoint;
-                position.x += x * spaceSize.x + (spaceSize.x / 2);
-                position.z += y * spaceSize.z + (spaceSize.z / 2);
+                var length = (conn.m_point - node.m_point).magnitude;
+                var direction = (conn.m_point - node.m_point).normalized;
 
-                if (! Physics.CheckBox(position, spaceSize * 0.4f, Quaternion.identity, layerMask))
-                {
-                    buildings[x][y] = Instantiate(RandomPrefab(), position, Quaternion.identity, transform);
-                }
-                stepIterations++;
+                var point = node.m_point + (Quaternion.LookRotation(direction) * Vector3.left) * npg.m_roadWidth;
+                var facingDir = Quaternion.LookRotation(Quaternion.LookRotation(direction) * Vector3.right);
 
-                if (stepIterations >= iterationsPerStep)
+                while (length > 0)
                 {
-                    yield return new WaitForSeconds(timePerStep);
-                    stepIterations = 0;
+                    GameObject prefab = RandomPrefab();
+                    BuildingData data = prefab.GetComponent<BuildingData>();
+                    Vector3 step = direction * (data.size.x / 2);
+
+                    length -= data.size.x;
+
+                    var pos = (point + step);
+                    pos -= facingDir * (Vector3.forward * (data.size.z / 2));
+
+                    if (!Physics.CheckBox(pos, data.size/2, facingDir, layerMask))
+                    {
+                        buildings.Add(Instantiate(prefab, pos, facingDir, transform));
+                    }
+
+                    point += step*2;
+
+                    if (++stepIterations >= iterationsPerStep)
+                    {
+                        yield return new WaitForSeconds(timePerStep);
+                        stepIterations = 0;
+                    }
                 }
             }
         }
+
+        Event_Manager.Instance.InvokeEvent(E_Event.Buildings, E_Action.Finished);
+
+        //for (int x = 0; x < gridSize.x; x++)
+        //{
+        //    buildings[x] = new GameObject[gridSize.y];
+        //    for (int y = 0; y < gridSize.y; y++)
+        //    {
+        //        //idx - 
+        //        position = startPoint;
+        //        position.x += x * spaceSize.x + (spaceSize.x / 2);
+        //        position.z += y * spaceSize.z + (spaceSize.z / 2);
+
+        //        if (!Physics.CheckBox(position, spaceSize * 0.4f, Quaternion.identity, layerMask))
+        //        {
+        //            buildings[x][y] = null;
+        //        }
+        //        stepIterations++;
+
+        //        if (stepIterations >= iterationsPerStep)
+        //        {
+        //            yield return new WaitForSeconds(timePerStep);
+        //            stepIterations = 0;
+        //        }
+        //    }
+        //}
     }
 
     private GameObject RandomPrefab()
