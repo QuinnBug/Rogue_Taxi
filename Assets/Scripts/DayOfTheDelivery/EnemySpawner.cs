@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -16,7 +17,6 @@ public class EnemySpawner : Singleton<EnemySpawner>
 
     private LNode_Manager m_lnm;
     private GameObject m_player;
-    private float m_SpawnTimer;
 
     private List<GameObject> m_enemies = new List<GameObject>();
 
@@ -24,20 +24,21 @@ public class EnemySpawner : Singleton<EnemySpawner>
     {
         m_lnm = GameObject.FindAnyObjectByType<LNode_Manager>();
         m_player = GameObject.FindAnyObjectByType<TruckController>().gameObject;
+
+        Event_Manager.Instance.AddListener(E_Event.Buildings, E_Action.Finished, StartSpawning);
     }
 
-    private void Update()
+    private void StartSpawning() 
     {
-        if (!d_doSpawning) { return; }
+        StartCoroutine(WaveSpawning());
+    }
 
-        if (m_SpawnTimer >= 0)
+    private IEnumerator WaveSpawning()
+    {
+        while (d_doSpawning)
         {
-            m_SpawnTimer -= Time.deltaTime;
-        }
-        else
-        {
+            yield return new WaitForSeconds(m_SpawnDelay.RandomValue());
             SpawnWave();
-            m_SpawnTimer += m_SpawnDelay.RandomValue();
         }
     }
 

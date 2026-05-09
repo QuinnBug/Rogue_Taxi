@@ -60,7 +60,9 @@ public class BuildingPopulator : Singleton<BuildingPopulator>
 
                 var point = line.a;
                 Vector3 dirFromRoad = Quaternion.LookRotation(direction) * Vector3.left;
-                Quaternion rotToRoad = Quaternion.LookRotation(Quaternion.LookRotation(direction) * Vector3.right);
+                //Kenney assets are currently flipped the wrong way around. This is flipped for now to compensate
+                //Quaternion rotToRoad = Quaternion.LookRotation(Quaternion.LookRotation(direction) * Vector3.right);
+                Quaternion rotToRoad = Quaternion.LookRotation(Quaternion.LookRotation(direction) * Vector3.left);
 
                 while (length > 0)
                 {
@@ -72,23 +74,24 @@ public class BuildingPopulator : Singleton<BuildingPopulator>
                     length -= data.size.x;
 
                     // Step along the road, then move away from the road
-                    var pos = (point + step) + (dirFromRoad * (data.size.z * 0.75f));
+                    var pos = (point + step) + (dirFromRoad * (data.size.z * 0.5f));
 
-                    // Check for collisions
-                    if (!Physics.CheckBox(pos, data.size / 2, rotToRoad, layerMask))
+                    // Check for collisions (smaller hit box to allow for slight overlap of blank spaces)
+                    if (!Physics.CheckBox(pos, data.size * 0.4f, rotToRoad, layerMask))
                     {
                         buildings.Add(Instantiate(prefab, pos, rotToRoad, transform));
                     }
-                    else 
-                    {
-                        var un = new Vector3(data.size.x/2, 0, data.size.z/2);
-                        var deux = new Vector3(-data.size.x/2, 0, data.size.z/2);
+                    //else 
+                    //{
+                    //    var size = rotToRoad * data.size;
+                    //    var un = new Vector3(size.x/2, 0, size.z/2);
+                    //    var deux = new Vector3(-size.x/2, 0, size.z/2);
 
-                        Debug.DrawLine(pos + un, pos - un, Color.red, 9999);
-                        Debug.DrawLine(pos + deux, pos - deux, Color.red, 9999);
-                        Debug.DrawLine(pos + un, pos - deux, Color.blue, 9999);
-                        Debug.DrawLine(pos + deux, pos - un, Color.blue, 9999);
-                    }
+                    //    Debug.DrawLine(pos + un, pos - un, Color.red, 9999);
+                    //    Debug.DrawLine(pos + deux, pos - deux, Color.red, 9999);
+                    //    Debug.DrawLine(pos + un, pos - deux, Color.blue, 9999);
+                    //    Debug.DrawLine(pos + deux, pos - un, Color.blue, 9999);
+                    //}
 
                     // Update the point to the edge of the building
                     point += step * 2;

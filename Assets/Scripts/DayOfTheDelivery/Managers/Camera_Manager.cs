@@ -16,4 +16,11 @@ public class Camera_Manager : Singleton<Camera_Manager>
             target.position + offset,
             moveSpeed * Time.deltaTime);
     }
+
+    private void OnDrawGizmos()
+    {
+        focus.position = Vector3.Lerp(focus.position,
+            target.position + offset,
+            moveSpeed * Time.deltaTime);
+    }
 }

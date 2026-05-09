@@ -78,6 +78,7 @@ public class Wheel
 public class SuspensionSystem : MonoBehaviour
 {
     public bool d_bShowPoints;
+    public bool d_bApplyBaseSettings;
     [Space]
     public Wheel[] wheels;
     public SuspensionSettings baseSettings;
@@ -96,7 +97,11 @@ public class SuspensionSystem : MonoBehaviour
     {
         foreach (Wheel wheel in wheels)
         {
-            wheel.settings = baseSettings;
+            if (d_bApplyBaseSettings)
+            {
+                wheel.settings = baseSettings;
+            }
+
             wheel.UpdatePosition(transform);
             if (wheel.UpdateLength(-transform.up)) 
             {
@@ -125,7 +130,10 @@ public class SuspensionSystem : MonoBehaviour
 
         foreach (Wheel wheel in wheels)
         {
-            wheel.settings = baseSettings;
+            if (d_bApplyBaseSettings)
+            {
+                wheel.settings = baseSettings;
+            }
 
             if (!Application.isPlaying) 
             {
