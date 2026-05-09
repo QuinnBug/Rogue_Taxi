@@ -25,18 +25,18 @@ namespace Earclipping
 
 			triangles.Clear();
 			//If we just have three points, then we dont have to do all calculations
-			if (poly.vertices.Length == 3)
+			if (poly.m_vertices.Length == 3)
 			{
-				triangles.Add(new Triangle(poly.vertices[0].point, poly.vertices[1].point, poly.vertices[2].point));
+				triangles.Add(new Triangle(poly.m_vertices[0].point, poly.m_vertices[1].point, poly.m_vertices[2].point));
 				return triangles.ToArray();
 			}
 
 			//Step 1. Store the vertices in a list and we also need to know the next and prev vertex
-			int polyUniqueVertexCount = poly.vertices.Length - 1; //the last and first vertex are the same
+			int polyUniqueVertexCount = poly.m_vertices.Length - 1; //the last and first vertex are the same
 			vertices.Clear();
 			for (int i = 0; i < polyUniqueVertexCount; ++i)
 			{
-				vertices.Add(new Vertex(poly.vertices[i].point));
+				vertices.Add(new Vertex(poly.m_vertices[i].point));
 			}
 
 			//Find the next and previous vertex
@@ -62,7 +62,7 @@ namespace Earclipping
             //Step 2. Find the reflex (concave) and convex vertices, and ear vertices
             for (int i = 0; i < vertices.Count; ++i)
 			{
-				CheckIfReflexOrConvex(vertices[i], poly.center);
+				CheckIfReflexOrConvex(vertices[i], poly.m_center);
 			}
 
 			//Have to find the ears after we have found if the vertex is reflex or convex
@@ -105,8 +105,8 @@ namespace Earclipping
 				earVertexNext.prev = earVertexPrev;
 
 				//...see if we have found a new ear by investigating the two vertices that were part of the ear
-				CheckIfReflexOrConvex(earVertexPrev, poly.center);
-				CheckIfReflexOrConvex(earVertexNext, poly.center);
+				CheckIfReflexOrConvex(earVertexPrev, poly.m_center);
+				CheckIfReflexOrConvex(earVertexNext, poly.m_center);
 
 				earVertices.Remove(earVertexPrev);
 				earVertices.Remove(earVertexNext);
@@ -287,9 +287,9 @@ namespace Earclipping
 	[System.Serializable]
 	public class Polygon
 	{
-		public Vector3 center;
-		public Vertex[] vertices;
-		public Line[] lines;
+		public Vector3 m_center;
+		public Vertex[] m_vertices;
+		public Line[] m_lines;
 
 		public bool isThreeD = false; //3d flag
 		public bool isVert = false; // Vertical flag
@@ -300,11 +300,13 @@ namespace Earclipping
 		public Polygon(List<Line> nodeLines, Vector3 _center)
 		{
 			List<Line> tempLines = new List<Line>(nodeLines);
-			List<Vertex> points = new List<Vertex>();
+			List<Vertex> vertices = new List<Vertex>
+            {
+                //add the first line
+                new Vertex(tempLines[0].a),
+                new Vertex(tempLines[0].b)
+            };
 
-			//add the first line
-			points.Add(new Vertex(tempLines[0].a));
-			points.Add(new Vertex(tempLines[0].b));
 			tempLines.RemoveAt(0);
 
             while (tempLines.Count > 0)
@@ -317,70 +319,75 @@ namespace Earclipping
 
                 for (int i = 0; i < tempLines.Count; ++i)
                 {
-					if (tempLines[i].a == points[points.Count - 1].point)
+					if (tempLines[i].a == vertices[vertices.Count - 1].point)
 					{
-						points.Add(new Vertex(tempLines[i].b));
+						vertices.Add(new Vertex(tempLines[i].b));
 						tempLines.RemoveAt(i);
 						found = true;
 						break;
 					}
-					else if (tempLines[i].b == points[points.Count - 1].point)
+					else if (tempLines[i].b == vertices[vertices.Count - 1].point)
 					{
-						points.Add(new Vertex(tempLines[i].a));
+						vertices.Add(new Vertex(tempLines[i].a));
 						tempLines.RemoveAt(i);
 						found = true;
 						break;
 					}
-                    else if (Vector3.Distance(tempLines[i].a, points[points.Count - 1].point) < closestDist)
+                    else if (Vector3.Distance(tempLines[i].a, vertices[vertices.Count - 1].point) < closestDist)
 					{
 						closeA = true;
 						closestIdx = i;
-						closestDist = Vector3.Distance(tempLines[i].a, points[points.Count - 1].point);
+						closestDist = Vector3.Distance(tempLines[i].a, vertices[vertices.Count - 1].point);
 					}
-                    else if (Vector3.Distance(tempLines[i].b, points[points.Count - 1].point) < closestDist)
+                    else if (Vector3.Distance(tempLines[i].b, vertices[vertices.Count - 1].point) < closestDist)
                     {
 						closeA = false;
 						closestIdx = i;
-						closestDist = Vector3.Distance(tempLines[i].b, points[points.Count - 1].point);
+						closestDist = Vector3.Distance(tempLines[i].b, vertices[vertices.Count - 1].point);
 					}
 				}
 
                 if (!found)
                 {
-					points.Add(new Vertex(closeA ? tempLines[closestIdx].a : tempLines[closestIdx].b));
-					points.Add(new Vertex(!closeA ? tempLines[closestIdx].a : tempLines[closestIdx].b));
+					vertices.Add(new Vertex(closeA ? tempLines[closestIdx].a : tempLines[closestIdx].b));
+					vertices.Add(new Vertex(!closeA ? tempLines[closestIdx].a : tempLines[closestIdx].b));
 
 					tempLines.RemoveAt(closestIdx);
 					//Debug.Log("no identical line in tLine " + center);
                 }
             }
 
-			vertices = points.ToArray();
-
-			center = _center;
+			Init(_center, vertices.ToArray());
 		}
 
 		public Polygon(Vector3 _center, Vector3[] _points, bool _isVert = false) 
 		{
-			center = _center;
-
-			vertices = new Vertex[_points.Length];
-            for (int i = 0; i < _points.Length; i++)
-            {
-				vertices[i] = new Vertex(_points[i]);
-            }
-
 			isVert = _isVert;
 
-			List<Line> tempLines = new List<Line>();
+            var vertices = new Vertex[_points.Length];
             for (int i = 0; i < _points.Length; i++)
             {
-				int j = Lists.ClampListIndex(i + 1, _points.Length);
-
-				tempLines.Add(new Line(_points[i], _points[j]));
+                vertices[i] = new Vertex(_points[i]);
             }
-			lines = tempLines.ToArray();
+
+            Init(_center, vertices);
 		}
+
+		private void Init(Vector3 _center, Vertex[] _vertices)
+		{
+            m_center = _center;
+
+            m_vertices = _vertices;
+
+            List<Line> tempLines = new List<Line>();
+            for (int i = 0; i < _vertices.Length; i++)
+            {
+                int j = Lists.ClampListIndex(i + 1, _vertices.Length);
+
+                tempLines.Add(new Line(_vertices[i].point, _vertices[j].point));
+            }
+            m_lines = tempLines.ToArray();
+        }
 
 		public void Flip() 
 		{
@@ -395,7 +402,7 @@ namespace Earclipping
 
         internal bool TriInBounds(Triangle newTriangle)
         {
-			Line testLine = new Line(center, center + (Vector3.up + Vector3.right) * 99999999);
+			Line testLine = new Line(m_center, m_center + (Vector3.up + Vector3.right) * 99999999);
 
 			//loop through the 3 midpoints of the lines
             for (int i = 0; i < 3; i++)
@@ -403,7 +410,7 @@ namespace Earclipping
 				int j = Lists.ClampListIndex(i + 1, 3);
 				testLine.a = Vector3.Lerp(newTriangle.vertices[i], newTriangle.vertices[j], 0.5f);
 
-                foreach (Line line in lines)
+                foreach (Line line in m_lines)
                 {
 					if (line.DoesIntersect(testLine, out Vector3 iPoint))
                     {
@@ -453,7 +460,7 @@ namespace Earclipping
 
 		public void DebugDraw(Color color, float duration, bool connecteds = false) 
 		{
-            foreach (Line line in lines)
+            foreach (Line line in m_lines)
             {
 				Debug.DrawLine(line.a, line.b, color, duration);
             }

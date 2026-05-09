@@ -12,14 +12,14 @@ public class BuildingPopulator : Singleton<BuildingPopulator>
     [Space]
     public GameObject[] prefabs;
     [Space]
+    public LayerMask layerMask;
 
     [Space]
     public MeshBuilder mb;
     public LNode_Manager lnm;
     public NodePolygonGenerator npg;
 
-    private Dictionary<int, List<GameObject>> buildingsMap;
-    private LayerMask layerMask;
+    private Dictionary<Node, List<GameObject>> m_buildingsMap = new Dictionary<Node, List<GameObject>>();
     private int lastPrefab;
 
     internal int stepIterations = 0;
@@ -27,7 +27,7 @@ public class BuildingPopulator : Singleton<BuildingPopulator>
     private void Start()
     {
         lastPrefab = -1;
-        layerMask = 1 << LayerMask.NameToLayer("Building");
+        //layerMask = 1 << LayerMask.NameToLayer("Road") << LayerMask.NameToLayer("Building");
 
         Event_Manager.Instance.AddListener(E_Event.RoadMeshes, E_Action.Finished, StartBuildingProcess);
     }
@@ -40,7 +40,6 @@ public class BuildingPopulator : Singleton<BuildingPopulator>
 
     IEnumerator PlaceBuildings() 
     {
-        List<GameObject> buildings = new List<GameObject>();
 
         // I need to get each node connection
         // Take each side of the line and for each
@@ -50,13 +49,18 @@ public class BuildingPopulator : Singleton<BuildingPopulator>
 
         foreach (var node in lnm.AllNodes())
         {
-            foreach (var conn in node.m_connections)
+            List<GameObject> buildings = new List<GameObject>();
+            //foreach (var conn in node.m_connections)
+            var polygon = npg.m_nodePolygons[node];
+            foreach (var line in polygon.m_lines)
             {
-                var length = (conn.m_point - node.m_point).magnitude;
-                var direction = (conn.m_point - node.m_point).normalized;
+                //var length = (conn.m_point - node.m_point).magnitude;
+                var length = line.Length();
+                var direction = line.Direction();
 
-                var point = node.m_point + (Quaternion.LookRotation(direction) * Vector3.left) * npg.m_roadWidth;
-                var facingDir = Quaternion.LookRotation(Quaternion.LookRotation(direction) * Vector3.right);
+                var point = line.a;
+                Vector3 dirFromRoad = Quaternion.LookRotation(direction) * Vector3.left;
+                Quaternion rotToRoad = Quaternion.LookRotation(Quaternion.LookRotation(direction) * Vector3.right);
 
                 while (length > 0)
                 {
@@ -64,17 +68,30 @@ public class BuildingPopulator : Singleton<BuildingPopulator>
                     BuildingData data = prefab.GetComponent<BuildingData>();
                     Vector3 step = direction * (data.size.x / 2);
 
+                    // Reduce the length
                     length -= data.size.x;
 
-                    var pos = (point + step);
-                    pos -= facingDir * (Vector3.forward * (data.size.z / 2));
+                    // Step along the road, then move away from the road
+                    var pos = (point + step) + (dirFromRoad * (data.size.z * 0.75f));
 
-                    if (!Physics.CheckBox(pos, data.size/2, facingDir, layerMask))
+                    // Check for collisions
+                    if (!Physics.CheckBox(pos, data.size / 2, rotToRoad, layerMask))
                     {
-                        buildings.Add(Instantiate(prefab, pos, facingDir, transform));
+                        buildings.Add(Instantiate(prefab, pos, rotToRoad, transform));
+                    }
+                    else 
+                    {
+                        var un = new Vector3(data.size.x/2, 0, data.size.z/2);
+                        var deux = new Vector3(-data.size.x/2, 0, data.size.z/2);
+
+                        Debug.DrawLine(pos + un, pos - un, Color.red, 9999);
+                        Debug.DrawLine(pos + deux, pos - deux, Color.red, 9999);
+                        Debug.DrawLine(pos + un, pos - deux, Color.blue, 9999);
+                        Debug.DrawLine(pos + deux, pos - un, Color.blue, 9999);
                     }
 
-                    point += step*2;
+                    // Update the point to the edge of the building
+                    point += step * 2;
 
                     if (++stepIterations >= iterationsPerStep)
                     {
@@ -83,33 +100,11 @@ public class BuildingPopulator : Singleton<BuildingPopulator>
                     }
                 }
             }
+
+            m_buildingsMap[node] = buildings;
         }
 
         Event_Manager.Instance.InvokeEvent(E_Event.Buildings, E_Action.Finished);
-
-        //for (int x = 0; x < gridSize.x; x++)
-        //{
-        //    buildings[x] = new GameObject[gridSize.y];
-        //    for (int y = 0; y < gridSize.y; y++)
-        //    {
-        //        //idx - 
-        //        position = startPoint;
-        //        position.x += x * spaceSize.x + (spaceSize.x / 2);
-        //        position.z += y * spaceSize.z + (spaceSize.z / 2);
-
-        //        if (!Physics.CheckBox(position, spaceSize * 0.4f, Quaternion.identity, layerMask))
-        //        {
-        //            buildings[x][y] = null;
-        //        }
-        //        stepIterations++;
-
-        //        if (stepIterations >= iterationsPerStep)
-        //        {
-        //            yield return new WaitForSeconds(timePerStep);
-        //            stepIterations = 0;
-        //        }
-        //    }
-        //}
     }
 
     private GameObject RandomPrefab()

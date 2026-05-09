@@ -330,11 +330,11 @@ public class NodePolygonGenerator : MonoBehaviour
 
     private Polygon ExtrudeNodePolygon(Polygon _poly, Node _node) 
     {
-        Vector3[] extrudedVertices = new Vector3[_poly.vertices.Length];
+        Vector3[] extrudedVertices = new Vector3[_poly.m_vertices.Length];
 
         for (int i = 0; i < extrudedVertices.Length; i++)
         {
-            extrudedVertices[i] = _poly.vertices[i].point + (Vector3.up * m_extrusionDepth);
+            extrudedVertices[i] = _poly.m_vertices[i].point + (Vector3.up * m_extrusionDepth);
         }
 
         Polygon extrudedPoly = new Polygon(_node.m_point, extrudedVertices);
@@ -349,19 +349,19 @@ public class NodePolygonGenerator : MonoBehaviour
         List<Vector3[]> wallVertices = new List<Vector3[]>();
 
         int start = 0;
-        int end = _poly.vertices.Length;
+        int end = _poly.m_vertices.Length;
         int next = 1;
         int current = 0;
         Line testLine = new Line(Vector3.zero, Vector3.forward);
 
         List<Vector3> verts = new List<Vector3>();
-        while (current < _poly.vertices.Length)
+        while (current < _poly.m_vertices.Length)
         {
-            verts.Add(_poly.vertices[current].point);
+            verts.Add(_poly.m_vertices[current].point);
 
-            next = Lists.ClampListIndex(current + 1, _poly.vertices.Length);
-            testLine.a = _poly.vertices[current].point;
-            testLine.b = _poly.vertices[next].point;
+            next = Lists.ClampListIndex(current + 1, _poly.m_vertices.Length);
+            testLine.a = _poly.m_vertices[current].point;
+            testLine.b = _poly.m_vertices[next].point;
             //testLine.DebugDraw(Color.green, 120);
 
             bool intersects = false;
@@ -386,7 +386,7 @@ public class NodePolygonGenerator : MonoBehaviour
                 }
 
                 //then we add a connection to poly.vertices.start
-                verts.Add(_poly.vertices[start].point);
+                verts.Add(_poly.m_vertices[start].point);
 
                 //then we add verts to wallVertices and clear verts
                 wallVertices.Add(verts.ToArray());
@@ -394,7 +394,7 @@ public class NodePolygonGenerator : MonoBehaviour
 
                 //then we jump to the start of the next poly
                 current = start = end;
-                end = _poly.vertices.Length;
+                end = _poly.m_vertices.Length;
             }
             else
             {
@@ -415,7 +415,7 @@ public class NodePolygonGenerator : MonoBehaviour
             }
 
             //then we add a connection to poly.vertices.start
-            verts.Add(_poly.vertices[start].point);
+            verts.Add(_poly.m_vertices[start].point);
 
             //then we add verts to wallVertices and clear verts
             wallVertices.Add(verts.ToArray());
@@ -455,18 +455,18 @@ public class NodePolygonGenerator : MonoBehaviour
         {
             foreach (Polygon polyList in m_nodePolygons.Values)
             {
-                for (int j = 0; j < polyList.vertices.Length; j++)
+                for (int j = 0; j < polyList.m_vertices.Length; j++)
                 {
                     if (j > 0 && db_drawPolygons)
                     {
                         Gizmos.color = Color.cyan;
-                        Gizmos.DrawLine(polyList.vertices[j].point, polyList.vertices[j - 1].point);
+                        Gizmos.DrawLine(polyList.m_vertices[j].point, polyList. m_vertices[j - 1].point);
                     }
 
                     if (db_drawPoints)
                     {
                         Gizmos.color = new Color(1, 0, 0, 1.0f);
-                        Gizmos.DrawSphere(polyList.vertices[j].point, 0.3f);
+                        Gizmos.DrawSphere(polyList.m_vertices[j].point, 0.3f);
                     }
                 }
             }

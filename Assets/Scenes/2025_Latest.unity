@@ -1282,8 +1282,8 @@ MonoBehaviour:
   tileSettings:
     size: {x: 50, y: 50}
     perlinZoom: 0.0035
-    perlinHeight: 10
-    perlinHeightLimit: 5
+    perlinHeight: 1
+    perlinHeightLimit: 1
     vSize: {x: 10, y: 10}
   worldStart: {x: 0, y: 0, z: 0}
   perlinOffset: {x: 0, y: 0}
@@ -1303,11 +1303,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildingPopulator
   timePerStep: 0.5
-  iterationsPerStep: 10
+  iterationsPerStep: 1
   prefabs:
   - {fileID: 7875482991174700871, guid: 66cfc55caeb15b04a8a924a6abb4b37a, type: 3}
   - {fileID: 7875482991174700871, guid: 1df069f8fb8231d489f678651d2b3a57, type: 3}
   - {fileID: 7875482991174700871, guid: e54613c1a1e8ea942b9304a1c4ae88a6, type: 3}
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 576
   mb: {fileID: 2109595313}
   lnm: {fileID: 2109595310}
   npg: {fileID: 2109595312}

@@ -156,4 +156,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ac5c7a5401858d4f83a34d7d1449189, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
-  size: {x: 7, y: 20, z: 7}
+  size: {x: 7, y: 20, z: 10}

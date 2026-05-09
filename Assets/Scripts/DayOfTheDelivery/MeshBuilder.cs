@@ -75,6 +75,8 @@ public class MeshBuilder : MonoBehaviour
             roads[i].GetComponent<MeshCollider>().sharedMesh = meshes[i];
 
             roads[i].name = "Road(" + i + ")";
+
+            roads[i].layer = LayerMask.NameToLayer("Road");
         }
 
         Event_Manager.Instance.InvokeEvent(E_Event.RoadMeshes, E_Action.Finished);
@@ -176,24 +178,24 @@ public class MeshBuilder : MonoBehaviour
                 if (linkedPoly.isVert)
                 {
                     //the list of vertices halved then -1 for 0 start
-                    for (int top = 0; top < (linkedPoly.vertices.Length / 2); top++)
+                    for (int top = 0; top < (linkedPoly.m_vertices.Length / 2); top++)
                     {
-                        int bottom = (linkedPoly.vertices.Length - 1) - top;
+                        int bottom = (linkedPoly.m_vertices.Length - 1) - top;
 
-                        verts.Add(linkedPoly.vertices[top].point);
+                        verts.Add(linkedPoly.m_vertices[top].point);
                         idxList.Add(verts.Count - 1);
-                        verts.Add(linkedPoly.vertices[bottom - 1].point);
+                        verts.Add(linkedPoly.m_vertices[bottom - 1].point);
                         idxList.Add(verts.Count - 1);
-                        verts.Add(linkedPoly.vertices[top + 1].point);
+                        verts.Add(linkedPoly.m_vertices[top + 1].point);
                         idxList.Add(verts.Count - 1);
 
                         //--
 
-                        verts.Add(linkedPoly.vertices[top].point);
+                        verts.Add(linkedPoly.m_vertices[top].point);
                         idxList.Add(verts.Count - 1);
-                        verts.Add(linkedPoly.vertices[bottom].point);
+                        verts.Add(linkedPoly.m_vertices[bottom].point);
                         idxList.Add(verts.Count - 1);
-                        verts.Add(linkedPoly.vertices[bottom - 1].point);
+                        verts.Add(linkedPoly.m_vertices[bottom - 1].point);
                         idxList.Add(verts.Count - 1);
                     }
                 }
