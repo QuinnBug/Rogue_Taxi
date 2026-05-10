@@ -7,7 +7,7 @@ public struct PlayerStats
 {
     public float accelerationRate;
     public float decelerationRate;
-    public Range<float> speedLimits;
+    public Range<float> accelLimits;
     public float turnSpeed;
     public float turnResetRate;
 

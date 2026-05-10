@@ -34,7 +34,6 @@ public class Wheel
         maxLength = settings.restLength + settings.springTravel;
 
         RaycastHit hit;
-
         if (Physics.Raycast(position, _dir, out hit, maxLength + settings.wheelRadius, groundMask))
         {
             grounded = true;
@@ -148,7 +147,7 @@ public class SuspensionSystem : MonoBehaviour
                 if (wheel.grounded) 
                 {
                     Gizmos.color = Color.blue;
-                    Gizmos.DrawSphere(wheel.groundPos, wheel.settings.wheelRadius);
+                    Gizmos.DrawSphere(wheel.groundPos - (Vector3.up * wheel.settings.wheelRadius), wheel.settings.wheelRadius);
                 }
             }
         }

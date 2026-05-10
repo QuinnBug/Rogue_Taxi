@@ -68,7 +68,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -876546973899608171, guid: d3c4162699d66af41ba497346cfa7dcc, type: 3}
+  - {fileID: 2100000, guid: 273b11d96c609804ea354a141fae6f48, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -125,7 +125,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51dee08ecd8202c41ada9797cd17cac7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TerrainTile
-  tilePosition: {x: 0, y: 0}
+  tileCoords: {x: 0, y: 0}
   m_ShowGrid: 0
   settings:
     size: {x: 0, y: 0}

@@ -52,22 +52,24 @@ public class Terrain_Manager : Singleton<Terrain_Manager>
 
         lowerX -= 2;
         lowerY -= 2;
-        upperX += 1;
-        upperY += 1;
+        upperX += 2;
+        upperY += 2;
 
-        //QWN: is this just wrong?
         Vector3 bottomLeft = LNode_Manager.Instance.MapKeyToWorldPos(new Vector2Int(lowerX, lowerY));
         Vector3 topRight = LNode_Manager.Instance.MapKeyToWorldPos(new Vector2Int(upperX, upperY));
         Vector3 difference = topRight - bottomLeft;
 
         Debug.Log(lowerX + " : " + lowerY + " && " + upperX + "  : " + upperY);
-        Debug.Log(bottomLeft + " >> " + topRight + " >> " + difference);
+        Debug.Log("BL: " + bottomLeft + ", TR: " + topRight + ", Diff:" + difference);
+        Debug.DrawLine(bottomLeft, topRight, Color.crimson, 300);
 
+        //QWN: is this just wrong?
         worldStart = bottomLeft;
         m_tileCounts = new Vector2Int (
-            (int)(difference.x / LNode_Manager.Instance.m_nodeLimitRange.max),
-            (int)(difference.z / LNode_Manager.Instance.m_nodeLimitRange.max)
+            ((int)difference.x / tileSettings.size.x) / 10,
+            ((int)difference.z / tileSettings.size.y) / 10
         );
+        Debug.Log("Tiles: " + m_tileCounts);
     }
 
     void GenerateTile(Vector2Int _position) 

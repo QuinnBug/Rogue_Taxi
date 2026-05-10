@@ -86,9 +86,11 @@ public class TruckController : MonoBehaviour
                 Vector3 movement = transform.forward * m_acceleration * Time.deltaTime;
                 m_physics.AddForce(movement);
             }
-
-            m_physics.linearVelocity = Vector3.Lerp(m_physics.linearVelocity, Vector3.zero, m_fVelocityDrag);
         }
+
+        var drag = m_physics.linearVelocity * -m_fVelocityDrag;
+        drag.y = 0;
+        m_physics.AddForce(drag, ForceMode.Acceleration);
     }
 
     void EnableInput() 
@@ -102,7 +104,7 @@ public class TruckController : MonoBehaviour
         if (m_moveInput.y != 0)
         {
             m_acceleration += m_moveInput.y * m_stats.accelerationRate * Time.deltaTime;
-            m_acceleration = m_stats.speedLimits.Clamp(m_acceleration);
+            m_acceleration = m_stats.accelLimits.Clamp(m_acceleration);
         }
         else if (Mathf.Abs(m_acceleration) <= 0.1f && m_moveInput.y != 0.0f)
         {

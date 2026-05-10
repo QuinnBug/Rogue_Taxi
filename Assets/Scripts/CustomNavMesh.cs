@@ -10,8 +10,6 @@ using UnityEngine.Splines.Interpolators;
 
 public class CustomNavMesh : Singleton<CustomNavMesh>
 {
-    public bool d_testGeneration;
-
     private void Start()
     {
         Event_Manager.Instance.AddListener(E_Event.Buildings, E_Action.Finished, GenerateNavMesh);
@@ -19,7 +17,7 @@ public class CustomNavMesh : Singleton<CustomNavMesh>
 
     private void GenerateNavMesh()
     {
-        //GetComponent<NavMeshSurface>().BuildNavMesh();
+        GetComponent<NavMeshSurface>().BuildNavMesh();
     }
 
     //internal Dictionary<uint, NavGridPoint> m_navGrid;
