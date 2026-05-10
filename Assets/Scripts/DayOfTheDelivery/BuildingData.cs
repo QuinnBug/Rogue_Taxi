@@ -1,12 +1,13 @@
+using System;
 using UnityEngine;
 
 public class BuildingData : MonoBehaviour
 {
-    public Vector3 size;
+    public Vector3 m_size;
 
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireCube(transform.position + (Vector3.up * size.y / 2), size);
+        Gizmos.DrawWireCube(transform.position + (Vector3.up * m_size.y / 2), m_size);
     }
 }

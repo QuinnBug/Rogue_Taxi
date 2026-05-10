@@ -77,7 +77,7 @@ PrefabInstance:
       addedObject: {fileID: -4934764958439624687}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: c7ecdd29475542943986ea51ff92fd29, type: 3}
       insertIndex: -1
-      addedObject: {fileID: -6654978626202941360}
+      addedObject: {fileID: 2243473844728795984}
   m_SourcePrefab: {fileID: 100100000, guid: c7ecdd29475542943986ea51ff92fd29, type: 3}
 --- !u!1 &1785506421814721729 stripped
 GameObject:
@@ -96,9 +96,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ac5c7a5401858d4f83a34d7d1449189, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
-  size: {x: 10, y: 10, z: 10}
---- !u!65 &-6654978626202941360
-BoxCollider:
+  m_size: {x: 10, y: 10, z: 10}
+  m_isTarget: 0
+--- !u!64 &2243473844728795984
+MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -115,6 +116,7 @@ BoxCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.5, y: 2.2250001, z: 0.5}
-  m_Center: {x: 0, y: 1.1125001, z: 0}
+  serializedVersion: 5
+  m_Convex: 1
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -3017946880544813418, guid: c7ecdd29475542943986ea51ff92fd29, type: 3}

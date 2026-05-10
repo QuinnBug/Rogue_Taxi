@@ -484,7 +484,12 @@ namespace Utility
 		{
 			return ((index % listSize) + listSize) % listSize;
 		}
-	}
+
+        public static int RandomIndex(int listSize)
+        {
+			return UnityEngine.Random.Range(0, listSize);
+        }
+    }
 
 	public static class Geometry 
 	{

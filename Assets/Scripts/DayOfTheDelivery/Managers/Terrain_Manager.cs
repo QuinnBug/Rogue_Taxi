@@ -50,10 +50,10 @@ public class Terrain_Manager : Singleton<Terrain_Manager>
             upperY = Mathf.Max(upperY, node.y);
         }
 
-        lowerX -= 2;
-        lowerY -= 2;
-        upperX += 2;
-        upperY += 2;
+        lowerX -= 5;
+        lowerY -= 5;
+        upperX += 5;
+        upperY += 5;
 
         Vector3 bottomLeft = LNode_Manager.Instance.MapKeyToWorldPos(new Vector2Int(lowerX, lowerY));
         Vector3 topRight = LNode_Manager.Instance.MapKeyToWorldPos(new Vector2Int(upperX, upperY));

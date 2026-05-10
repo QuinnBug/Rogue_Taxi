@@ -17,7 +17,8 @@ public enum E_Event
     RoadPolygons,
     RoadMeshes,
     Buildings,
-    NavMesh
+    NavMesh,
+    GamePlay
 }
 
 public class Event_Manager : Singleton<Event_Manager>

@@ -19,7 +19,7 @@ public class BuildingPopulator : Singleton<BuildingPopulator>
     public LNode_Manager lnm;
     public NodePolygonGenerator npg;
 
-    private Dictionary<Node, List<GameObject>> m_buildingsMap = new Dictionary<Node, List<GameObject>>();
+    public Dictionary<Node, List<GameObject>> m_buildingsMap = new Dictionary<Node, List<GameObject>>();
     private int lastPrefab;
 
     internal int stepIterations = 0;
@@ -68,16 +68,16 @@ public class BuildingPopulator : Singleton<BuildingPopulator>
                 {
                     GameObject prefab = RandomPrefab();
                     BuildingData data = prefab.GetComponent<BuildingData>();
-                    Vector3 step = direction * (data.size.x / 2);
+                    Vector3 step = direction * (data.m_size.x / 2);
 
                     // Reduce the length
-                    length -= data.size.x;
+                    length -= data.m_size.x;
 
                     // Step along the road, then move away from the road
-                    var pos = (point + step) + (dirFromRoad * (data.size.z * 0.5f));
+                    var pos = (point + step) + (dirFromRoad * (data.m_size.z * 0.5f));
 
                     // Check for collisions (smaller hit box to allow for slight overlap of blank spaces)
-                    if (!Physics.CheckBox(pos, data.size * 0.4f, rotToRoad, layerMask))
+                    if (!Physics.CheckBox(pos, data.m_size * 0.4f, rotToRoad, layerMask))
                     {
                         buildings.Add(Instantiate(prefab, pos, rotToRoad, transform));
                     }
@@ -121,5 +121,11 @@ public class BuildingPopulator : Singleton<BuildingPopulator>
 
         lastPrefab = rndNum;
         return prefabs[rndNum];
+    }
+
+    public BuildingData GetRandomBuildingForNode(Node node)
+    {
+        var buildings = m_buildingsMap[node];
+        return buildings[Utility.Lists.RandomIndex(buildings.Count)].GetComponent<BuildingData>();
     }
 }

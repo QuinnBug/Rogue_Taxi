@@ -32,7 +32,7 @@ public class TruckController : MonoBehaviour
         Cursor.visible = false;
 
         m_physics.useGravity = false;
-        Event_Manager.Instance.AddListener(E_Event.RoadMeshes, E_Action.Finished, EnableInput);
+        Event_Manager.Instance.AddListener(E_Event.Buildings, E_Action.Finished, EnableInput);
     }
 
     // Update is called once per frame

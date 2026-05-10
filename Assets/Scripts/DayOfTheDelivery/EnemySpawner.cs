@@ -56,7 +56,7 @@ public class EnemySpawner : Singleton<EnemySpawner>
     {
         if (m_enemies.Count >= m_MaxEnemyCount) { return; }
 
-        List<Node> validNodes = m_lnm.GetNodesInRange(m_player.transform.position, m_SpawnRange);
+        List<Node> validNodes = m_lnm.GetNodesInRange(m_player.transform.position, m_SpawnRange, false);
         int nodeIdx = UnityEngine.Random.Range(0, validNodes.Count);
         Vector3 position = validNodes[nodeIdx].m_point;
 

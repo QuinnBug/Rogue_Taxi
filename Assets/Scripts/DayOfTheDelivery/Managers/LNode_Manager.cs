@@ -92,7 +92,7 @@ public class LNode_Manager : Singleton<LNode_Manager>
                         tempPos = ag.tempPos;
                         direction = ag.direction;
                         m_length = ag.length;
-                        List<Node> localNodes = GetNodesInRange(currentPos, (int)Math.Ceiling(m_nodeLimitRange.min));
+                        List<Node> localNodes = GetNodesInRange(currentPos, (int)Math.Ceiling(m_nodeLimitRange.min), true);
 
                         if (localNodes.Count == 0) { Debug.LogError("[LNM] No nodes found at loaded position"); }
                         foreach (Node item in localNodes)
@@ -151,7 +151,7 @@ public class LNode_Manager : Singleton<LNode_Manager>
     {
         Node nodeAtPosition = null;
 
-        NodeList nodesInRange = GetNodesInRange(_position, (int)Mathf.Ceil(m_nodeLimitRange.min));
+        NodeList nodesInRange = GetNodesInRange(_position, (int)Mathf.Ceil(m_nodeLimitRange.min), true);
         foreach (Node item in nodesInRange)
         {
             if (_position == item.m_point || Vector3.Distance(_position, item.m_point) <= m_nodeLimitRange.min)
@@ -181,7 +181,7 @@ public class LNode_Manager : Singleton<LNode_Manager>
 
         //Untangle any connection crossovers
 
-        NodeList nodesInRange = GetNodesInRange(focusNode.m_point, 2);
+        NodeList nodesInRange = GetNodesInRange(focusNode.m_point, 2, true);
 
         for (int c = 0; c < focusNode.m_connections.Count; ++c)
         {
@@ -270,7 +270,7 @@ public class LNode_Manager : Singleton<LNode_Manager>
         return new Vector3(_key.x, 0, _key.y) * m_nodeLimitRange.max;
     }
 
-    public NodeList GetNodesInRange(Vector3 _position, int _range) 
+    public NodeList GetNodesInRange(Vector3 _position, int _range, bool includeCenter) 
     {
         NodeList nodeList = new NodeList();
 
@@ -283,6 +283,11 @@ public class LNode_Manager : Singleton<LNode_Manager>
             {
                 rangeKey.x = centralKey.x + x;
                 rangeKey.y = centralKey.y + y;
+
+                if(!includeCenter && rangeKey == centralKey)
+                {
+                    continue;
+                }
 
                 if (m_nodeMap.ContainsKey(rangeKey)) 
                 {
