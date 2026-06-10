@@ -8,6 +8,7 @@ public class Wheel
     internal Vector3 position;
     internal bool grounded = false;
     internal Vector3 groundPos;
+    internal Vector3 forward = Vector3.zero;
 
     public Vector3 offset;
     public SuspensionSettings settings;
@@ -38,11 +39,19 @@ public class Wheel
         {
             grounded = true;
             groundPos = hit.point;
+
+            Vector3 wheelOut = wheelTransform.right;
+            //if (offset.x < 0) { wheelOut *= -1; }
+            var rot = Quaternion.AngleAxis(90, wheelOut);
+            forward = rot * hit.normal;
+            //forward = wheelTransform.forward;
+            Debug.DrawLine(position, position + forward, Color.yellow);
         }
         else
         {
             grounded = false;
             groundPos = position + (_dir * maxLength);
+            forward = wheelTransform.forward;
         }
 
         if (wheelTransform) 

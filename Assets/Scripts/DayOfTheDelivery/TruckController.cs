@@ -11,15 +11,16 @@ public class TruckController : MonoBehaviour
     [Space]
     public float m_fRotationSpeed = 0;
     [Space]
-    public float m_fVelocityMin = 1;
-    public float m_fVelocityDrag = 1;
+    public float m_fTurningTorque = 1;
+    public float m_fTurningVelocityMin = 1;
     [Space]
-    public PlayerStats m_stats;
+    public TruckStats m_stats;
 
     private float m_acceleration = 0;
+    
+    
     private float m_turning = 0;
 
-    private Vector3 m_forward;
     private Vector2 m_turnInput;
     private Vector2 m_moveInput;
 
@@ -38,6 +39,8 @@ public class TruckController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        m_stats.Update();
+
         AccelInputHandling();
         TurnInputHandling();
 
@@ -64,33 +67,16 @@ public class TruckController : MonoBehaviour
     private void PhysicsUpdate()
     {
         // Steering //
-        float steeringDir = m_turning * m_stats.fTurnLimit;
-        m_forward = Quaternion.Euler(0, steeringDir, 0) * transform.forward;
-
-        // Turning //
-        Vector3 horizontalMomentum = m_physics.linearVelocity;
-        horizontalMomentum.y = 0;
-        float fCurrentSpeed = horizontalMomentum.magnitude;
-
-        if (fCurrentSpeed >= m_fVelocityMin)
-        {
-            var targetRot = Quaternion.LookRotation(m_acceleration >= 0 ? m_forward : -m_forward, Vector3.up);
-            transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, Mathf.Min(fCurrentSpeed, m_stats.turnSpeed) * Time.deltaTime);
-        }
+        float steeringDir = m_turning * m_stats.fTurnLimit * m_fTurningTorque;
+        m_physics.AddTorque(0, steeringDir, 0);
 
         // Movement //
-        if (m_suspension.GroundedPercent() >= 0.25f)
+        foreach (var wheel in m_suspension.wheels)
         {
-            if (Mathf.Abs(m_acceleration) != 0.0f)
-            {
-                Vector3 movement = transform.forward * m_acceleration * Time.deltaTime;
-                m_physics.AddForce(movement);
-            }
-        }
+            if (!wheel.grounded) { continue; }
 
-        var drag = m_physics.linearVelocity * -m_fVelocityDrag;
-        drag.y = 0;
-        m_physics.AddForce(drag, ForceMode.Acceleration);
+            m_physics.AddForce(wheel.forward * m_acceleration);
+        }
     }
 
     void EnableInput() 
@@ -101,20 +87,9 @@ public class TruckController : MonoBehaviour
     private void AccelInputHandling()
     {
         //Input//
-        if (m_moveInput.y != 0)
-        {
-            m_acceleration += m_moveInput.y * m_stats.accelerationRate * Time.deltaTime;
-            m_acceleration = m_stats.accelLimits.Clamp(m_acceleration);
-        }
-        else if (Mathf.Abs(m_acceleration) <= 0.1f && m_moveInput.y != 0.0f)
-        {
-            m_acceleration = 0;
-        }
-        else
-        {
-            m_acceleration = Mathf.Lerp(m_acceleration, 0, m_stats.decelerationRate * Time.deltaTime);
-        }
+        m_acceleration = m_moveInput.y * m_stats.acceleration;
     }
+
     private void TurnInputHandling()
     {
         if (m_turnInput.x != 0)
@@ -134,10 +109,9 @@ public class TruckController : MonoBehaviour
 
     public void MovementInput(InputAction.CallbackContext context)
     {
-        Vector2 _input = context.ReadValue<Vector2>();
+        float _input = context.ReadValue<float>();
 
-        m_moveInput.x = _input.x;
-        m_moveInput.y = _input.y;
+        m_moveInput.y = _input;
     }
 
     public void TurningInput(InputAction.CallbackContext context)
@@ -146,5 +120,11 @@ public class TruckController : MonoBehaviour
 
         m_turnInput.x = _input.x;
         //m_turnInput.y = _input.y;
+    }
+
+    public void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawSphere( transform.position + m_physics.centerOfMass, 0.5f);
     }
 }

@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class Delivery_Manager : Singleton<Delivery_Manager>
 {
+    public float m_zoneDistFromCurb = 3.5f;
+    [Space]
     public Range<float> m_deliveryRange;
 
     public BuildingData m_currentBuilding;
@@ -24,7 +26,7 @@ public class Delivery_Manager : Singleton<Delivery_Manager>
         var nodes = LNode_Manager.Instance.GetNodesInRange(m_player.transform.position, 2, false);
         m_currentBuilding = BuildingPopulator.Instance.GetRandomBuildingForNode(nodes[Utility.Lists.RandomIndex(nodes.Count)]);
         dropZone.transform.position = m_currentBuilding.transform.position +
-            m_currentBuilding.transform.forward * -(m_currentBuilding.m_size.z * 0.75f);
+            m_currentBuilding.transform.forward * -(m_currentBuilding.m_size.z + m_zoneDistFromCurb);
         //The -on the size is because kenney buildings are reversed on the Z axis
     }
 
@@ -33,7 +35,7 @@ public class Delivery_Manager : Singleton<Delivery_Manager>
         if (m_currentBuilding != null) {
             var dir = m_currentBuilding.transform.position - pointer.transform.position;
             dir.y = 0;
-            pointer.transform.rotation = Quaternion.LookRotation(dir, Vector3.up);
+            pointer.transform.rotation = Quaternion.LookRotation(dir, m_player.transform.up);
         }
     }
 }

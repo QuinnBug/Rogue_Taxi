@@ -3,24 +3,42 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public struct PlayerStats 
+public struct TruckStats 
 {
-    public float accelerationRate;
-    public float decelerationRate;
-    public Range<float> accelLimits;
-    public float turnSpeed;
-    public float turnResetRate;
+    // Driving
+    [SerializeField]
+    private float speedScaling;
+    [SerializeField]
+    private float baseAcceleration;
+    [SerializeField]
+    private float baseDeceleration;
+    [SerializeField]
+    private Range<float> baseSpeedLimits;
 
+    // Steering
+    [SerializeField]
+    public float turnSpeed;
+    [SerializeField]
+    public float turnResetRate;
+    [SerializeField]
     public float fTurnLimit;
+    [SerializeField]
     public float fWheelLimit;
 
-    public float currentFuel;
-    public float maxFuel;
-
-    public float fuelDrain;
+    internal float acceleration;
+    internal float deceleration;
+    internal Range<float> speedLimits;
 
     public void Init() 
     {
-        currentFuel = maxFuel;
+        Update();
+    }
+
+    public void Update()
+    {
+        acceleration = baseAcceleration * speedScaling;
+        deceleration = baseDeceleration * speedScaling;
+        speedLimits.min = baseSpeedLimits.min * speedScaling;
+        speedLimits.max = baseSpeedLimits.max * speedScaling;
     }
 }
