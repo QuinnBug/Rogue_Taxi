@@ -789,9 +789,9 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8550650907020814402}
   serializedVersion: 5
-  m_Mass: 100
+  m_Mass: 50
   m_LinearDamping: 1
-  m_AngularDamping: 3
+  m_AngularDamping: 2
   m_CenterOfMass: {x: 0, y: 0.5, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -929,21 +929,22 @@ MonoBehaviour:
   m_physics: {fileID: 1684035440427140382}
   m_suspension: {fileID: 8231434879047456012}
   m_fRotationSpeed: 2
-  m_fVelocityMin: 0.1
-  m_fVelocityDrag: 0.5
+  m_fTurningTorque: 15
+  m_fTurningVelocityMin: 1
   m_stats:
-    accelerationRate: 5000
-    decelerationRate: 5
-    accelLimits:
-      min: -30000
-      max: 30000
+    speedScaling: 1
+    baseAcceleration: 5
+    revScale: 2
+    revDrag: 0.01
+    revLimits:
+      min: -10
+      max: 300
     turnSpeed: 2
     turnResetRate: 5
     fTurnLimit: 50
     fWheelLimit: 45
-    currentFuel: 0
-    maxFuel: 0
-    fuelDrain: 0
+  m_currentAccel: 0
+  m_revs: 0
 --- !u!114 &8231434879047456012
 MonoBehaviour:
   m_ObjectHideFlags: 0

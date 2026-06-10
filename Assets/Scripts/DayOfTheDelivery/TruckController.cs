@@ -16,10 +16,13 @@ public class TruckController : MonoBehaviour
     [Space]
     public TruckStats m_stats;
 
-    private float m_acceleration = 0;
-    
+    [SerializeField]
+    private float m_currentAccel = 0;
+    [SerializeField]
+    private float m_revs = 0;
     
     private float m_turning = 0;
+    private bool m_braking = false;
 
     private Vector2 m_turnInput;
     private Vector2 m_moveInput;
@@ -68,6 +71,9 @@ public class TruckController : MonoBehaviour
     {
         // Steering //
         float steeringDir = m_turning * m_stats.fTurnLimit * m_fTurningTorque;
+        if (m_revs < 0) { steeringDir *= -1; }
+        else if (m_revs == 0) { steeringDir = 0; }
+        
         m_physics.AddTorque(0, steeringDir, 0);
 
         // Movement //
@@ -75,7 +81,7 @@ public class TruckController : MonoBehaviour
         {
             if (!wheel.grounded) { continue; }
 
-            m_physics.AddForce(wheel.forward * m_acceleration);
+            m_physics.AddForce(wheel.forward * m_currentAccel);
         }
     }
 
@@ -86,8 +92,15 @@ public class TruckController : MonoBehaviour
 
     private void AccelInputHandling()
     {
-        //Input//
-        m_acceleration = m_moveInput.y * m_stats.acceleration;
+        m_braking = m_revs > 0 && m_moveInput.y < 0;
+
+        if (Mathf.Abs(m_revs) >= 0.01) { m_revs = Mathf.Lerp(m_revs, 0, m_stats.revDrag); }
+        else { m_revs = 0; }
+
+        m_revs += m_moveInput.y * m_stats.revScale;
+        m_revs = m_stats.revLimits.Clamp(m_revs);
+
+        m_currentAccel = m_braking ? 0 : m_revs * m_stats.acceleration;
     }
 
     private void TurnInputHandling()
@@ -120,6 +133,11 @@ public class TruckController : MonoBehaviour
 
         m_turnInput.x = _input.x;
         //m_turnInput.y = _input.y;
+    }
+
+    public void BrakingInput(InputAction.CallbackContext context)
+    {
+
     }
 
     public void OnDrawGizmosSelected()

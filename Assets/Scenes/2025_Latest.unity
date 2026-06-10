@@ -1565,23 +1565,43 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 1684035440427140382, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
-      propertyPath: m_Mass
-      value: 50
-      objectReference: {fileID: 0}
-    - target: {fileID: 1684035440427140382, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
       propertyPath: m_LinearDamping
-      value: 0.5
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 6881629318576706497, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
-      propertyPath: m_fVelocityDrag
-      value: 0
+      propertyPath: m_stats.revDrag
+      value: 0.01
+      objectReference: {fileID: 0}
+    - target: {fileID: 6881629318576706497, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: m_fTurningTorque
+      value: 15
+      objectReference: {fileID: 0}
+    - target: {fileID: 6881629318576706497, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: m_stats.revScale
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 6881629318576706497, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
       propertyPath: m_stats.speedScaling
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6881629318576706497, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: m_stats.revLimits.max
+      value: 300
+      objectReference: {fileID: 0}
+    - target: {fileID: 6881629318576706497, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: m_stats.revLimits.min
+      value: -10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6881629318576706497, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
       propertyPath: m_stats.baseAcceleration
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 6881629318576706497, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: m_stats.baseRevLimits.max
+      value: 1000
+      objectReference: {fileID: 0}
+    - target: {fileID: 6881629318576706497, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: m_stats.baseRevLimits.min
       value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 8550650907020814402, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}

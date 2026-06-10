@@ -10,10 +10,10 @@ public struct TruckStats
     private float speedScaling;
     [SerializeField]
     private float baseAcceleration;
-    [SerializeField]
-    private float baseDeceleration;
-    [SerializeField]
-    private Range<float> baseSpeedLimits;
+    public float revScale;
+    public float revDrag;
+    public Range<float> revLimits;
+
 
     // Steering
     [SerializeField]
@@ -26,8 +26,6 @@ public struct TruckStats
     public float fWheelLimit;
 
     internal float acceleration;
-    internal float deceleration;
-    internal Range<float> speedLimits;
 
     public void Init() 
     {
@@ -37,8 +35,5 @@ public struct TruckStats
     public void Update()
     {
         acceleration = baseAcceleration * speedScaling;
-        deceleration = baseDeceleration * speedScaling;
-        speedLimits.min = baseSpeedLimits.min * speedScaling;
-        speedLimits.max = baseSpeedLimits.max * speedScaling;
     }
 }
