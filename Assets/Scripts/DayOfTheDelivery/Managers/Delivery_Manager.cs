@@ -1,41 +1,100 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class Delivery_Manager : Singleton<Delivery_Manager>
 {
-    public float m_zoneDistFromCurb = 3.5f;
-    [Space]
-    public Range<float> m_deliveryRange;
+    public Range<float> m_nodeRange;
 
-    public BuildingData m_currentBuilding;
+    public Range<float> m_timeRange;
+
+    public int m_currentDeliveryId = -1;
 
     private GameObject m_player;
 
-    public GameObject dropZone;
     public GameObject pointer;
+
+    private float m_newDeliveryTimer = 0;
+    private bool m_active = false;
+    private Dictionary<int, Delivery> m_activeDeliveries = new Dictionary<int, Delivery>();
 
     private void Start()
     {
-        Event_Manager.Instance.AddListener(E_Event.Buildings, E_Action.Finished, SelectRandomDelivery);
+        Event_Manager.Instance.AddListener(E_Event.Buildings, E_Action.Finished, StartDeliveryClock);
         m_player = FindAnyObjectByType<TruckController>().gameObject;
     }
 
+    void StartDeliveryClock()
+    {
+        m_active = true;
+    }
+
+    void UpdateDeliveryClock()
+    {
+        if (!m_active) { return; }
+
+        m_newDeliveryTimer -= Time.deltaTime;
+        if (m_newDeliveryTimer < 0)
+        {
+            RandomNewDelivery();
+            m_newDeliveryTimer = m_timeRange.RandomValue();
+        }
+    }
+
     // Update is called once per frame
-    public void SelectRandomDelivery()
+    public void RandomNewDelivery()
     {
         var nodes = LNode_Manager.Instance.GetNodesInRange(m_player.transform.position, 2, false);
-        m_currentBuilding = BuildingPopulator.Instance.GetRandomBuildingForNode(nodes[Utility.Lists.RandomIndex(nodes.Count)]);
-        dropZone.transform.position = m_currentBuilding.transform.position +
-            m_currentBuilding.transform.forward * -(m_currentBuilding.m_size.z + m_zoneDistFromCurb);
-        //The -on the size is because kenney buildings are reversed on the Z axis
+        var currentBuilding = BuildingPopulator.Instance.GetRandomBuildingForNode(nodes[Utility.Lists.RandomIndex(nodes.Count)]);
+        if (!m_activeDeliveries.ContainsKey(currentBuilding.m_id))
+        {
+            m_activeDeliveries[currentBuilding.m_id] = new Delivery(currentBuilding);
+        }
+
+        if (m_currentDeliveryId == -1)
+        {
+            m_currentDeliveryId = currentBuilding.m_id;
+        }
+    }
+
+    public void MarkDeliveryComplete(int id)
+    {
+        if (m_activeDeliveries.TryGetValue(id, out Delivery value))
+        {
+            value.building.m_highlighted = false;
+            m_activeDeliveries.Remove(id);
+            m_currentDeliveryId = m_activeDeliveries.Count > 0 ? m_activeDeliveries.Keys.First() : -1;
+        }
     }
 
     private void Update()
     {
-        if (m_currentBuilding != null) {
-            var dir = m_currentBuilding.transform.position - pointer.transform.position;
-            dir.y = 0;
-            pointer.transform.rotation = Quaternion.LookRotation(dir, m_player.transform.up);
+        if (m_currentDeliveryId != -1) {
+            if (m_activeDeliveries.TryGetValue(m_currentDeliveryId, out Delivery value))
+            { 
+                var deliveryTarget = value.building.transform.position;
+                var dir = deliveryTarget - pointer.transform.position;
+                dir.y = 0;
+                pointer.transform.rotation = Quaternion.LookRotation(dir, m_player.transform.up);
+            }
         }
+
+        UpdateDeliveryClock();
     }
+}
+
+public struct Delivery
+{
+    public Delivery(BuildingData _building)
+    {
+        building = _building;
+        
+        building.m_highlighted = true;
+        timeStamp = Time.time;
+    }
+
+    public BuildingData building;
+    public float timeStamp;
 }

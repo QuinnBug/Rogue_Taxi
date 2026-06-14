@@ -8,6 +8,7 @@ public class TruckController : MonoBehaviour
     public Transform[] m_aWheelTransforms;
     public Rigidbody m_physics;
     public SuspensionSystem m_suspension;
+    public InputHandler m_inputs;
     [Space]
     public float m_fRotationSpeed = 0;
     [Space]
@@ -15,7 +16,12 @@ public class TruckController : MonoBehaviour
     public float m_fTurningVelocityMin = 1;
     [Space]
     public TruckStats m_stats;
-
+    [Space]
+    public GameObject m_shotPrefab;
+    public GameObject m_deliveryCannon;
+    public float m_cannonOffset;
+    public float m_cannonForce;
+    
     [SerializeField]
     private float m_currentAccel = 0;
     [SerializeField]
@@ -24,8 +30,8 @@ public class TruckController : MonoBehaviour
     private float m_turning = 0;
     private bool m_braking = false;
 
-    private Vector2 m_turnInput;
-    private Vector2 m_moveInput;
+    private float m_turnInput;
+    private float m_moveInput;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -44,11 +50,20 @@ public class TruckController : MonoBehaviour
     {
         m_stats.Update();
 
+        m_moveInput = m_inputs.throttle;
+        m_turnInput = m_inputs.steering;
+
+        if (m_inputs.fire) { Shoot(); }
+
         AccelInputHandling();
         TurnInputHandling();
 
-        PhysicsUpdate();
         ModelUpdate();
+    }
+
+    private void FixedUpdate()
+    {
+        PhysicsUpdate();
     }
 
     private void ModelUpdate()
@@ -92,12 +107,12 @@ public class TruckController : MonoBehaviour
 
     private void AccelInputHandling()
     {
-        m_braking = m_revs > 0 && m_moveInput.y < 0;
+        m_braking = m_revs > 0 && m_moveInput < 0;
 
         if (Mathf.Abs(m_revs) >= 0.01) { m_revs = Mathf.Lerp(m_revs, 0, m_stats.revDrag); }
         else { m_revs = 0; }
 
-        m_revs += m_moveInput.y * m_stats.revScale;
+        m_revs += m_moveInput * m_stats.revScale;
         m_revs = m_stats.revLimits.Clamp(m_revs);
 
         m_currentAccel = m_braking ? 0 : m_revs * m_stats.acceleration;
@@ -105,12 +120,12 @@ public class TruckController : MonoBehaviour
 
     private void TurnInputHandling()
     {
-        if (m_turnInput.x != 0)
+        if (m_turnInput != 0)
         {
-            m_turning += m_turnInput.x * m_stats.turnSpeed * Time.deltaTime;
+            m_turning += m_turnInput * m_stats.turnSpeed * Time.deltaTime;
             m_turning = Mathf.Clamp(m_turning, -1, 1);
         }
-        else if (Mathf.Abs(m_turning) <= 0.1f && m_moveInput.y != 0.0f)
+        else if (Mathf.Abs(m_turning) <= 0.1f && m_moveInput != 0.0f)
         {
             m_turning = 0;
         }
@@ -120,24 +135,15 @@ public class TruckController : MonoBehaviour
         }
     }
 
-    public void MovementInput(InputAction.CallbackContext context)
+    private void Shoot()
     {
-        float _input = context.ReadValue<float>();
-
-        m_moveInput.y = _input;
-    }
-
-    public void TurningInput(InputAction.CallbackContext context)
-    {
-        Vector2 _input = context.ReadValue<Vector2>();
-
-        m_turnInput.x = _input.x;
-        //m_turnInput.y = _input.y;
-    }
-
-    public void BrakingInput(InputAction.CallbackContext context)
-    {
-
+        var shot = Instantiate(
+            m_shotPrefab,
+            m_deliveryCannon.transform.position + (m_deliveryCannon.transform.forward * m_cannonOffset),
+            Quaternion.identity
+        );
+        
+        shot.GetComponent<Rigidbody>().AddForce(m_physics.linearVelocity + (m_deliveryCannon.transform.forward * m_cannonForce));
     }
 
     public void OnDrawGizmosSelected()

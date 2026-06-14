@@ -12,6 +12,7 @@ public class BuildingPopulator : Singleton<BuildingPopulator>
     [Space]
     public GameObject[] prefabs;
     [Space]
+    public GameObject m_buildingHighlighter;
     public LayerMask layerMask;
 
     [Space]
@@ -40,13 +41,7 @@ public class BuildingPopulator : Singleton<BuildingPopulator>
 
     IEnumerator PlaceBuildings() 
     {
-
-        // I need to get each node connection
-        // Take each side of the line and for each
-        // then calculate the length of the line
-        // place a building, subtract it's size from the length
-        // repeat until no more size.
-
+        int i = 0;
         foreach (var node in lnm.AllNodes())
         {
             List<GameObject> buildings = new List<GameObject>();
@@ -79,7 +74,17 @@ public class BuildingPopulator : Singleton<BuildingPopulator>
                     // Check for collisions (smaller hit box to allow for slight overlap of blank spaces)
                     if (!Physics.CheckBox(pos, data.m_size * 0.4f, rotToRoad, layerMask))
                     {
-                        buildings.Add(Instantiate(prefab, pos, rotToRoad, transform));
+                        var building = Instantiate(prefab, pos, rotToRoad, transform);
+
+                        var particles = Instantiate(m_buildingHighlighter, building.transform);
+                        var ps = particles.GetComponent<ParticleSystem>().shape;
+                        ps.meshRenderer = building.GetComponent<MeshRenderer>();
+
+                        var bd = building.GetComponent<BuildingData>();
+                        bd.m_id = ++i;
+                        bd.m_highlighter = particles;
+
+                        buildings.Add(building);
                     }
                     //else 
                     //{
