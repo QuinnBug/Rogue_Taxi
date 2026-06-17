@@ -16,7 +16,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2879693651765829105
 Transform:
   m_ObjectHideFlags: 0
@@ -102,6 +102,7 @@ GameObject:
   - component: {fileID: 4719899599486585782}
   - component: {fileID: 2988246328616728258}
   - component: {fileID: 3831605747855595533}
+  - component: {fileID: 4666418458185013842}
   m_Layer: 2
   m_Name: wheel-front-right
   m_TagString: Player
@@ -118,7 +119,7 @@ Transform:
   m_GameObject: {fileID: 928518314820165041}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1, y: -0.25, z: 3}
+  m_LocalPosition: {x: 1, y: -0.27999997, z: 2.97}
   m_LocalScale: {x: 2.5, y: 2.5, z: 2.5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -201,6 +202,31 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.25
   m_Center: {x: 0.15000005, y: 0, z: 0}
+--- !u!114 &4666418458185013842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 928518314820165041}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 495a3ecd5233c39468953da94f9efc3e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Wheel
+  offset: {x: 1, y: -0.33, z: 2.97}
+  settings:
+    restLength: 0.5
+    springTravel: 0.25
+    springStiffness: 1000
+    damperStiffness: 1
+    wheelRadius: 0.8
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  fwdFriction: 0.2
+  sideFriction: 1
+  torqueDrag: 0.1
 --- !u!1 &2017058093542816501
 GameObject:
   m_ObjectHideFlags: 0
@@ -529,6 +555,7 @@ GameObject:
   - component: {fileID: 5080869736703210502}
   - component: {fileID: 4099689347234206417}
   - component: {fileID: 8078544045222883707}
+  - component: {fileID: 3753830700424686946}
   m_Layer: 2
   m_Name: wheel-back-left
   m_TagString: Player
@@ -545,7 +572,7 @@ Transform:
   m_GameObject: {fileID: 4329223055329290098}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1, y: -0.25, z: -1.15}
+  m_LocalPosition: {x: -1, y: -0.27999997, z: -1.1}
   m_LocalScale: {x: 2.5, y: 2.5, z: 2.5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -628,6 +655,31 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.25
   m_Center: {x: -0.15000005, y: 0, z: 0}
+--- !u!114 &3753830700424686946
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4329223055329290098}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 495a3ecd5233c39468953da94f9efc3e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Wheel
+  offset: {x: -1, y: -0.33, z: -1.1}
+  settings:
+    restLength: 0.5
+    springTravel: 0.25
+    springStiffness: 1000
+    damperStiffness: 1
+    wheelRadius: 0.8
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  fwdFriction: 0.2
+  sideFriction: 1
+  torqueDrag: 0.1
 --- !u!1 &5796577198427982587
 GameObject:
   m_ObjectHideFlags: 0
@@ -640,6 +692,7 @@ GameObject:
   - component: {fileID: 1635351701331070018}
   - component: {fileID: 9006867069184029746}
   - component: {fileID: 2689223417253394187}
+  - component: {fileID: 4633210192318767753}
   m_Layer: 2
   m_Name: wheel-front-left
   m_TagString: Player
@@ -656,7 +709,7 @@ Transform:
   m_GameObject: {fileID: 5796577198427982587}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -1, y: -0.25, z: 3}
+  m_LocalPosition: {x: -1, y: -0.27999997, z: 2.97}
   m_LocalScale: {x: 2.5, y: 2.5, z: 2.5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -739,6 +792,31 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.25
   m_Center: {x: -0.15000005, y: 0, z: 0}
+--- !u!114 &4633210192318767753
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5796577198427982587}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 495a3ecd5233c39468953da94f9efc3e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Wheel
+  offset: {x: -1, y: -0.33, z: 2.97}
+  settings:
+    restLength: 0.5
+    springTravel: 0.25
+    springStiffness: 1000
+    damperStiffness: 1
+    wheelRadius: 0.8
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  fwdFriction: 0.2
+  sideFriction: 1
+  torqueDrag: 0.1
 --- !u!1 &8550650907020814402
 GameObject:
   m_ObjectHideFlags: 0
@@ -902,7 +980,7 @@ Rigidbody:
   m_Mass: 50
   m_LinearDamping: 1
   m_AngularDamping: 2
-  m_CenterOfMass: {x: 0, y: 0.5, z: 0.8}
+  m_CenterOfMass: {x: 0, y: 0.5, z: 1.25}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
   m_IncludeLayers:
@@ -946,11 +1024,11 @@ MonoBehaviour:
     revScale: 2
     revDrag: 0.01
     revLimits:
-      min: -10
-      max: 300
+      min: -50
+      max: 50
     turnSpeed: 2
     turnResetRate: 5
-    fTurnLimit: 50
+    fTurnLimit: 60
     fWheelLimit: 45
   m_shotPrefab: {fileID: 7185162933015889852, guid: 3deed2ddcc44279439d6b6bbd1f1a8d3, type: 3}
   m_deliveryCannon: {fileID: 3429576596971621916}
@@ -973,55 +1051,15 @@ MonoBehaviour:
   d_bShowPoints: 1
   d_bApplyBaseSettings: 1
   wheels:
-  - offset: {x: 1, y: 0.45, z: 3}
-    settings:
-      restLength: 0.75
-      springTravel: 0.75
-      springStiffness: 300
-      damperStiffness: 2
-      wheelRadius: 0.8
-    groundMask:
-      serializedVersion: 2
-      m_Bits: 1019
-    wheelTransform: {fileID: 7507872768116452766}
-  - offset: {x: -1, y: 0.45, z: 3}
-    settings:
-      restLength: 0.75
-      springTravel: 0.75
-      springStiffness: 300
-      damperStiffness: 2
-      wheelRadius: 0.8
-    groundMask:
-      serializedVersion: 2
-      m_Bits: 1019
-    wheelTransform: {fileID: 779164599231770947}
-  - offset: {x: 1, y: 0.45, z: -1.15}
-    settings:
-      restLength: 0.75
-      springTravel: 0.75
-      springStiffness: 300
-      damperStiffness: 2
-      wheelRadius: 0.8
-    groundMask:
-      serializedVersion: 2
-      m_Bits: 1019
-    wheelTransform: {fileID: 7760394947538782554}
-  - offset: {x: -1, y: 0.45, z: -1.15}
-    settings:
-      restLength: 0.75
-      springTravel: 0.75
-      springStiffness: 300
-      damperStiffness: 2
-      wheelRadius: 0.8
-    groundMask:
-      serializedVersion: 2
-      m_Bits: 1019
-    wheelTransform: {fileID: 7628767661444164002}
+  - {fileID: 3753830700424686946}
+  - {fileID: 6173011707811296937}
+  - {fileID: 4633210192318767753}
+  - {fileID: 4666418458185013842}
   baseSettings:
-    restLength: 0.75
-    springTravel: 0.75
-    springStiffness: 300
-    damperStiffness: 2
+    restLength: 0.5
+    springTravel: 0.25
+    springStiffness: 1000
+    damperStiffness: 1
     wheelRadius: 0.8
   groundMask:
     serializedVersion: 2
@@ -1038,6 +1076,7 @@ GameObject:
   - component: {fileID: 3223000176977816855}
   - component: {fileID: 7539158217245219447}
   - component: {fileID: 3122873741144543697}
+  - component: {fileID: 6173011707811296937}
   m_Layer: 2
   m_Name: wheel-back-right
   m_TagString: Player
@@ -1054,7 +1093,7 @@ Transform:
   m_GameObject: {fileID: 8558760728831745955}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1, y: -0.25, z: -1.15}
+  m_LocalPosition: {x: 1, y: -0.27999997, z: -1.1}
   m_LocalScale: {x: 2.5, y: 2.5, z: 2.5}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -1137,6 +1176,31 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.25
   m_Center: {x: 0.15000005, y: 0, z: 0}
+--- !u!114 &6173011707811296937
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8558760728831745955}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 495a3ecd5233c39468953da94f9efc3e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Wheel
+  offset: {x: 1, y: -0.33, z: -1.1}
+  settings:
+    restLength: 0.5
+    springTravel: 0.25
+    springStiffness: 1000
+    damperStiffness: 1
+    wheelRadius: 0.8
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  fwdFriction: 0.2
+  sideFriction: 1
+  torqueDrag: 0.1
 --- !u!1001 &2547107125234086733
 PrefabInstance:
   m_ObjectHideFlags: 0

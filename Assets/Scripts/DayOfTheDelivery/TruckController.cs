@@ -41,8 +41,10 @@ public class TruckController : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        m_physics.useGravity = false;
-        Event_Manager.Instance.AddListener(E_Event.Buildings, E_Action.Finished, EnableInput);
+        if (Event_Manager.Instance != null) 
+        {
+            Event_Manager.Instance.AddListener(E_Event.Buildings, E_Action.Finished, EnableInput);
+        }
     }
 
     // Update is called once per frame
@@ -76,27 +78,16 @@ public class TruckController : MonoBehaviour
         {
             wheelTf.localRotation = Quaternion.Euler(0, wheelDir, 0);
         }
-
-        //BodyRot
-        //float bodyRot = steeringDir - wheelDir;
-        //m_bodyTransform.localRotation = Quaternion.Euler(0, bodyRot, 0);
     }
 
     private void PhysicsUpdate()
     {
-        // Steering //
-        float steeringDir = m_turning * m_stats.fTurnLimit * m_fTurningTorque;
-        if (m_revs < 0) { steeringDir *= -1; }
-        else if (m_revs == 0) { steeringDir = 0; }
-        
-        m_physics.AddTorque(0, steeringDir, 0);
-
         // Movement //
         foreach (var wheel in m_suspension.wheels)
         {
             if (!wheel.grounded) { continue; }
 
-            m_physics.AddForce(wheel.forward * m_currentAccel);
+            wheel.torque += m_revs * m_stats.acceleration;
         }
     }
 
@@ -114,8 +105,6 @@ public class TruckController : MonoBehaviour
 
         m_revs += m_moveInput * m_stats.revScale;
         m_revs = m_stats.revLimits.Clamp(m_revs);
-
-        m_currentAccel = m_braking ? 0 : m_revs * m_stats.acceleration;
     }
 
     private void TurnInputHandling()

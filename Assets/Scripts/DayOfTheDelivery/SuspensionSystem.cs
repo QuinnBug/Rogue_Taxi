@@ -1,88 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-[System.Serializable]
-public class Wheel 
-{
-    internal Vector3 position;
-    internal bool grounded = false;
-    internal Vector3 groundPos;
-    internal Vector3 forward = Vector3.zero;
-
-    public Vector3 offset;
-    public SuspensionSettings settings;
-    public LayerMask groundMask;
-    [Space]
-    public Transform wheelTransform;
-
-    private float minLength;
-    private float maxLength;
-    private float lastLength;
-    private float springLength;
-    private float springVelocity;
-    private float springForce;
-    private float damperForce;
-
-    public void UpdatePosition(Transform _tf) 
-    {
-        position = _tf.position + (_tf.rotation * offset);
-    }
-
-    public bool UpdateLength(Vector3 _dir)
-    {
-        minLength = settings.restLength - settings.springTravel;
-        maxLength = settings.restLength + settings.springTravel;
-
-        RaycastHit hit;
-        if (Physics.Raycast(position, _dir, out hit, maxLength + settings.wheelRadius, groundMask))
-        {
-            grounded = true;
-            groundPos = hit.point;
-
-            Vector3 wheelOut = wheelTransform.right;
-            //if (offset.x < 0) { wheelOut *= -1; }
-            var rot = Quaternion.AngleAxis(90, wheelOut);
-            forward = rot * hit.normal;
-            //forward = wheelTransform.forward;
-            Debug.DrawLine(position, position + forward, Color.yellow);
-        }
-        else
-        {
-            grounded = false;
-            groundPos = position + (_dir * maxLength);
-            forward = wheelTransform.forward;
-        }
-
-        if (wheelTransform) 
-        {
-            wheelTransform.position = Vector3.Lerp(
-                wheelTransform.position,
-                groundPos - (_dir * settings.wheelRadius),
-                settings.springStiffness * Time.deltaTime
-            );
-        }
-
-        return grounded;
-    }
-
-    public Vector3 GetForce(Vector3 _dir) 
-    {
-        minLength = settings.restLength - settings.springTravel;
-        maxLength = settings.restLength + settings.springTravel;
-        lastLength = springLength;
-
-        springLength = Vector3.Distance(position, groundPos) - settings.wheelRadius;
-        springLength = Mathf.Clamp(springLength, minLength, maxLength);
-        springVelocity = (lastLength - springLength) / Time.fixedDeltaTime;
-
-        springForce = settings.springStiffness * (settings.restLength - springLength);
-        damperForce = settings.damperStiffness * springVelocity;
-
-        return (springForce + damperForce) * _dir;
-    }
-}
-
 public class SuspensionSystem : MonoBehaviour
 {
     public bool d_bShowPoints;
@@ -92,12 +10,12 @@ public class SuspensionSystem : MonoBehaviour
     public SuspensionSettings baseSettings;
     public LayerMask groundMask = new LayerMask();
 
-    private Rigidbody rb;
+    private Rigidbody m_rb;
 
     // Start is called before the first frame update
     void Start()
     {
-        rb = GetComponent<Rigidbody>();
+        m_rb = GetComponent<Rigidbody>();
     }
 
     // Update is called once per frame
@@ -110,11 +28,7 @@ public class SuspensionSystem : MonoBehaviour
                 wheel.settings = baseSettings;
             }
 
-            wheel.UpdatePosition(transform);
-            if (wheel.UpdateLength(-transform.up)) 
-            {
-                rb.AddForceAtPosition(wheel.GetForce(transform.up), wheel.position);
-            }
+            wheel.PhysicsUpdate(m_rb);
         }
     }
 
@@ -141,23 +55,6 @@ public class SuspensionSystem : MonoBehaviour
             if (d_bApplyBaseSettings)
             {
                 wheel.settings = baseSettings;
-            }
-
-            if (!Application.isPlaying) 
-            {
-                wheel.UpdatePosition(transform);
-                wheel.UpdateLength(-transform.up);
-            }
-
-            if (d_bShowPoints) 
-            {
-                Gizmos.color = Color.yellow;
-                Gizmos.DrawSphere(wheel.position, 0.1f);
-                if (wheel.grounded) 
-                {
-                    Gizmos.color = Color.blue;
-                    Gizmos.DrawSphere(wheel.groundPos - (Vector3.up * wheel.settings.wheelRadius), wheel.settings.wheelRadius);
-                }
             }
         }
     }

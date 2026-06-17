@@ -49,7 +49,8 @@ public class Car_Movement : MonoBehaviour
         {
             if (wheel.grounded)
             {
-                rb.AddForce(transform.forward * movementInput.z * moveSpeed);
+                wheel.torque += movementInput.z * moveSpeed;
+                //rb.AddForce(transform.forward * movementInput.z * moveSpeed);
                 //PlayerManager.Instance.stats.currentFuel -= fuelDrain * Time.deltaTime;
                 break;
             }

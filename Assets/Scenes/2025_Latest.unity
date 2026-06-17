@@ -1656,7 +1656,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb902785252c38e4b904edcd3740eb2f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemySpawner
-  d_doSpawning: 1
+  d_doSpawning: 0
   m_MaxEnemyCount: 1000
   m_SpawnRange: 3
   m_SpawnDelay:
@@ -1719,6 +1719,70 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1684035440427140382, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: m_Mass
+      value: 50
+      objectReference: {fileID: 0}
+    - target: {fileID: 3753830700424686946, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: torqueDrag
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3753830700424686946, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: fwdFriction
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3753830700424686946, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: sideFriction
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3753830700424686946, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: settings.damperStiffness
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 4633210192318767753, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: torqueDrag
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4633210192318767753, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: sideFriction
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4633210192318767753, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: settings.damperStiffness
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 4666418458185013842, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: torqueDrag
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4666418458185013842, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: sideFriction
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4666418458185013842, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: settings.damperStiffness
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 6173011707811296937, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: torqueDrag
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6173011707811296937, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: sideFriction
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6173011707811296937, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: settings.damperStiffness
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8231434879047456012, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: baseSettings.damperStiffness
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8231434879047456012, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
+      propertyPath: baseSettings.springStiffness
+      value: 300
+      objectReference: {fileID: 0}
     - target: {fileID: 8550650907020814402, guid: 05688b03ff4f15f4ebc85cb24e8cacea, type: 3}
       propertyPath: m_Name
       value: Player (Test)
