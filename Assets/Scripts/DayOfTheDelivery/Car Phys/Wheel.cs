@@ -1,11 +1,13 @@
+using System.IO;
 using UnityEngine;
 
 public class Wheel : MonoBehaviour
 {
-    internal Vector3 position;
+    internal Vector3 hingePosition;
     internal bool grounded = false;
     internal Vector3 groundPos;
     internal Vector3 forward = Vector3.zero;
+    internal Vector3 right = Vector3.zero;
 
     public Vector3 offset;
     public SuspensionSettings settings;
@@ -14,68 +16,58 @@ public class Wheel : MonoBehaviour
     //Drive
     [Range(0.0f, 1.0f)] public float fwdFriction;
     [Range(0.0f, 1.0f)] public float sideFriction;
+    public AnimationCurve sideFrictionCurve;
+    public float maxSideVelocity = 1.0f;
+    public float sidePercent = 1.0f;
     internal float torque;
     [Range(0.0f, 1.0f)] public float torqueDrag;
+    public float wheelMass;
 
-    Vector3 fwdDrag = Vector3.zero;
-    Vector3 sideDrag = Vector3.zero;
-    Vector3 overallForce = Vector3.zero;
-
+    Vector3 fwdForce = Vector3.zero;
+    Vector3 sideForce = Vector3.zero;
 
     //Suspension
-    private float minLength;
     private float maxLength;
-    private float lastLength;
-    private float springLength;
-    private float springVelocity;
-    private float springForce;
-    private float damperForce;
+    public float springMoveSpeed;
 
     public void PhysicsUpdate(Rigidbody _rb)
     {
         UpdatePosition(_rb.transform);
         if (UpdateSpringLength(-transform.up))
         {
-            _rb.AddForceAtPosition(GetSuspensionForce(transform.up), position);
+            _rb.AddForceAtPosition(GetSuspensionForce(_rb, transform.up), hingePosition);
+            UpdateForces(_rb);
         }
-
-        UpdateForces(_rb);
     }
 
     public void UpdateForces(Rigidbody _rb)
     {
-        //Acceleration
-        torque = Mathf.Lerp(torque, 0, torqueDrag);
-        if (Mathf.Abs(torque) < 0.1f) { torque = 0; }
-        var accel = (transform.forward * torque) / Time.fixedDeltaTime;
+        // Acceleration
+        var fwdForce = (forward * torque) / Time.fixedDeltaTime;
+        _rb.AddForce(fwdForce);
 
-        //Drag
-        var velocity = _rb.GetPointVelocity(position);
-
-        var fwd = Vector3.Dot(velocity, transform.forward);
-        var forwardResistance = -fwd * fwdFriction;
-        fwdDrag = (transform.forward * forwardResistance) / Time.fixedDeltaTime;
-
-        var side = Vector3.Dot(velocity, transform.right);
-        var sideResistance = -side * sideFriction;
-        sideDrag = (transform.right * sideResistance) / Time.fixedDeltaTime;
-
-        overallForce = accel + fwdDrag + sideDrag;
-        _rb.AddForceAtPosition(overallForce, position);
+        // Steering
+        Vector3 steerDir = transform.right;
+        Vector3 tireWorldVel = _rb.GetPointVelocity(transform.position);
+        float steeringVel = Vector3.Dot(steerDir, tireWorldVel);
+        sidePercent = Mathf.Clamp(Mathf.Abs(steeringVel), 0, maxSideVelocity) / maxSideVelocity;
+        sideFriction = sideFrictionCurve.Evaluate(sidePercent);
+        float desiredVelChange = -steeringVel * sideFriction;
+        float desiredAccel = desiredVelChange / Time.fixedDeltaTime;
+        _rb.AddForceAtPosition(steerDir * wheelMass * desiredAccel, transform.position);
     }
 
-    public void UpdatePosition(Transform _tf)
+    public void UpdatePosition(Transform _parent)
     {
-        position = _tf.position + (_tf.rotation * offset);
+        hingePosition = _parent.position + (_parent.rotation * offset);
     }
 
     public bool UpdateSpringLength(Vector3 _dir)
     {
-        minLength = settings.restLength - settings.springTravel;
         maxLength = settings.restLength + settings.springTravel;
 
         RaycastHit hit;
-        if (Physics.Raycast(position, _dir, out hit, maxLength + settings.wheelRadius, groundMask))
+        if (Physics.Raycast(hingePosition, _dir, out hit, maxLength, groundMask))
         {
             grounded = true;
             groundPos = hit.point;
@@ -83,58 +75,57 @@ public class Wheel : MonoBehaviour
             Vector3 wheelOut = transform.right;
             var rot = Quaternion.AngleAxis(90, wheelOut);
             forward = rot * hit.normal;
-            Debug.DrawLine(position, position + forward, Color.yellow);
         }
         else
         {
             grounded = false;
-            groundPos = position + (_dir * maxLength);
+            groundPos = hingePosition + (_dir * maxLength);
             forward = transform.forward;
         }
 
-        transform.position = Vector3.Lerp(
-                transform.position,
-                groundPos - (_dir * settings.wheelRadius),
-                settings.springStiffness * Time.deltaTime
-        );
+        right = Quaternion.Euler(0, 90, 0) * forward;
+        transform.position = groundPos + (transform.up * settings.wheelRadius);
+        Debug.DrawLine(transform.position, transform.position + forward, Color.yellow);
+        Debug.DrawLine(transform.position, transform.position + right, Color.cyan);
 
         return grounded;
     }
 
-    public Vector3 GetSuspensionForce(Vector3 _dir)
+    public Vector3 GetSuspensionForce(Rigidbody _rb, Vector3 _dir)
     {
-        minLength = settings.restLength - settings.springTravel;
-        maxLength = settings.restLength + settings.springTravel;
-        lastLength = springLength;
+        //force = (offset * strength) - (velocity * damping)
 
-        springLength = Vector3.Distance(position, groundPos) - settings.wheelRadius;
-        springLength = Mathf.Clamp(springLength, minLength, maxLength);
-        springVelocity = (lastLength - springLength) / Time.fixedDeltaTime;
+        Vector3 springDir = transform.up;
+        Vector3 tireWorldVel = _rb.GetPointVelocity(transform.position);
+        float offset = settings.restLength - Vector3.Distance(hingePosition, groundPos);
+        float vel = Vector3.Dot(springDir, tireWorldVel);
+        float force = (offset * settings.springStiffness) - (vel * settings.damperStiffness);
+        return springDir * force;
 
-        springForce = settings.springStiffness * (settings.restLength - springLength);
-        damperForce = settings.damperStiffness * springVelocity;
+        //lastLength = springLength;
 
-        return (springForce + damperForce) * transform.up;
+        //springLength = Vector3.Distance(hingePosition, groundPos) - settings.wheelRadius;
+        //springLength = Mathf.Clamp(springLength, minLength, maxLength);
+        //springVelocity = (lastLength - springLength) / Time.fixedDeltaTime;
+
+        //springForce = settings.springStiffness * (settings.restLength - springLength);
+        //damperForce = settings.damperStiffness * springVelocity;
+
+        //return (springForce + damperForce) * transform.up;
     }
 
-    private void OnDrawGizmos()
+    private void OnDrawGizmosSelected()
     {
-        if (fwdDrag.magnitude > 0)
+        if (fwdForce.magnitude > 0)
         {
             Gizmos.color = Color.blue;
-            Gizmos.DrawLine(position, position + fwdDrag * 10);
+            Gizmos.DrawLine(transform.position, transform.position + fwdForce);
         }
 
-        if (sideDrag.magnitude > 0) 
+        if (sideForce.magnitude > 0) 
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawLine(position, position + sideDrag * 10);
-        }
-
-        if (overallForce.magnitude > 0)
-        {
-            Gizmos.color = Color.purple;
-            Gizmos.DrawLine(position, position + overallForce * 10);
+            Gizmos.DrawLine(hingePosition, hingePosition + sideForce);
         }
 
         if (!Application.isPlaying)
@@ -145,7 +136,7 @@ public class Wheel : MonoBehaviour
             UpdateSpringLength(-transform.up);
 
             Gizmos.color = Color.purple;
-            Gizmos.DrawSphere(position, 0.1f);
+            Gizmos.DrawSphere(hingePosition, 0.1f);
 
             if (grounded)
             {

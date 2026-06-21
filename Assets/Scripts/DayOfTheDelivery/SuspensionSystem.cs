@@ -57,6 +57,12 @@ public class SuspensionSystem : MonoBehaviour
                 wheel.settings = baseSettings;
             }
         }
+
+        if(m_rb != null)
+        {
+            Gizmos.color = Color.hotPink;
+            Gizmos.DrawLine(transform.position, transform.position + m_rb.linearVelocity);
+        }
     }
 
     //https://www.youtube.com/watch?v=x0LUiE0dxP0

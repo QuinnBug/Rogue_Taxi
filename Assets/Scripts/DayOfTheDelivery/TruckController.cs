@@ -83,11 +83,11 @@ public class TruckController : MonoBehaviour
     private void PhysicsUpdate()
     {
         // Movement //
-        foreach (var wheel in m_suspension.wheels)
+        foreach (Wheel wheel in m_suspension.wheels)
         {
             if (!wheel.grounded) { continue; }
 
-            wheel.torque += m_revs * m_stats.acceleration;
+            wheel.torque = m_revs * m_stats.acceleration;
         }
     }
 
@@ -98,9 +98,10 @@ public class TruckController : MonoBehaviour
 
     private void AccelInputHandling()
     {
+        //m_revs = m_moveInput * m_stats.revScale;
         m_braking = m_revs > 0 && m_moveInput < 0;
 
-        if (Mathf.Abs(m_revs) >= 0.01) { m_revs = Mathf.Lerp(m_revs, 0, m_stats.revDrag); }
+        if (Mathf.Abs(m_revs) >= 0.1f) { m_revs = Mathf.Lerp(m_revs, 0, m_stats.revDrag); }
         else { m_revs = 0; }
 
         m_revs += m_moveInput * m_stats.revScale;
@@ -114,7 +115,7 @@ public class TruckController : MonoBehaviour
             m_turning += m_turnInput * m_stats.turnSpeed * Time.deltaTime;
             m_turning = Mathf.Clamp(m_turning, -1, 1);
         }
-        else if (Mathf.Abs(m_turning) <= 0.1f && m_moveInput != 0.0f)
+        else if (Mathf.Abs(m_turning) <= 0.1f)
         {
             m_turning = 0;
         }

@@ -17,7 +17,7 @@ public class Delivery_Manager : Singleton<Delivery_Manager>
     public GameObject pointer;
 
     private float m_newDeliveryTimer = 0;
-    private bool m_active = false;
+    [SerializeField] private bool m_active = false;
     private Dictionary<int, Delivery> m_activeDeliveries = new Dictionary<int, Delivery>();
 
     private void Start()
@@ -63,7 +63,7 @@ public class Delivery_Manager : Singleton<Delivery_Manager>
     {
         if (m_activeDeliveries.TryGetValue(id, out Delivery value))
         {
-            value.building.m_highlighted = false;
+            value.building.SetHighlight(false);
             m_activeDeliveries.Remove(id);
             m_currentDeliveryId = m_activeDeliveries.Count > 0 ? m_activeDeliveries.Keys.First() : -1;
         }
@@ -91,7 +91,7 @@ public struct Delivery
     {
         building = _building;
         
-        building.m_highlighted = true;
+        building.SetHighlight(true);
         timeStamp = Time.time;
     }
 

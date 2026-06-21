@@ -9,12 +9,10 @@ public class BuildingData : MonoBehaviour
     public bool m_highlighted = false;
     public GameObject m_highlighter;
 
-    private void Update()
+    public void SetHighlight(bool _state)
     {
-        if (m_highlighter)
-        {
-            m_highlighter.SetActive(m_highlighted);
-        }
+        m_highlighted = _state;
+        m_highlighter.SetActive(m_highlighted);
     }
 
     private void OnCollisionEnter(Collision collision)

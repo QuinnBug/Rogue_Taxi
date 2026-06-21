@@ -83,6 +83,7 @@ public class BuildingPopulator : Singleton<BuildingPopulator>
                         var bd = building.GetComponent<BuildingData>();
                         bd.m_id = ++i;
                         bd.m_highlighter = particles;
+                        bd.SetHighlight(false);
 
                         buildings.Add(building);
                     }
