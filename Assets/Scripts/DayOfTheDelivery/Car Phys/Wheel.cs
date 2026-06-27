@@ -1,5 +1,6 @@
 using System.IO;
 using UnityEngine;
+using UnityEngine.PlayerLoop;
 
 public class Wheel : MonoBehaviour
 {
@@ -14,11 +15,9 @@ public class Wheel : MonoBehaviour
     public LayerMask groundMask;
     
     //Drive
-    [Range(0.0f, 1.0f)] public float fwdFriction;
-    [Range(0.0f, 1.0f)] public float sideFriction;
-    public AnimationCurve sideFrictionCurve;
-    public float maxSideVelocity = 1.0f;
-    public float sidePercent = 1.0f;
+    public FrictionValues fwdDrag;
+    public FrictionValues sideFriction;
+
     internal float torque;
     [Range(0.0f, 1.0f)] public float torqueDrag;
     public float wheelMass;
@@ -50,9 +49,8 @@ public class Wheel : MonoBehaviour
         Vector3 steerDir = transform.right;
         Vector3 tireWorldVel = _rb.GetPointVelocity(transform.position);
         float steeringVel = Vector3.Dot(steerDir, tireWorldVel);
-        sidePercent = Mathf.Clamp(Mathf.Abs(steeringVel), 0, maxSideVelocity) / maxSideVelocity;
-        sideFriction = sideFrictionCurve.Evaluate(sidePercent);
-        float desiredVelChange = -steeringVel * sideFriction;
+        sideFriction.Update(steeringVel);
+        float desiredVelChange = -steeringVel * sideFriction.currentValue;
         float desiredAccel = desiredVelChange / Time.fixedDeltaTime;
         _rb.AddForceAtPosition(steerDir * wheelMass * desiredAccel, transform.position);
     }
@@ -101,17 +99,6 @@ public class Wheel : MonoBehaviour
         float vel = Vector3.Dot(springDir, tireWorldVel);
         float force = (offset * settings.springStiffness) - (vel * settings.damperStiffness);
         return springDir * force;
-
-        //lastLength = springLength;
-
-        //springLength = Vector3.Distance(hingePosition, groundPos) - settings.wheelRadius;
-        //springLength = Mathf.Clamp(springLength, minLength, maxLength);
-        //springVelocity = (lastLength - springLength) / Time.fixedDeltaTime;
-
-        //springForce = settings.springStiffness * (settings.restLength - springLength);
-        //damperForce = settings.damperStiffness * springVelocity;
-
-        //return (springForce + damperForce) * transform.up;
     }
 
     private void OnDrawGizmosSelected()
@@ -146,3 +133,33 @@ public class Wheel : MonoBehaviour
         }
     }
 }
+
+[System.Serializable]
+public struct SuspensionSettings
+{
+    public float restLength;
+    public float springTravel;
+    public float springStiffness;
+    public float damperStiffness;
+    public float wheelRadius;
+}
+
+[System.Serializable]
+public class FrictionValues
+{
+    // Settings
+    public AnimationCurve frictionCurve;
+    public float maxVelocity;
+
+    //Variables
+    private float currentPercent;
+    [Range(0.0f, 1.0f)] internal float currentValue;
+
+    public void Update(float steeringVel)
+    {
+        currentPercent = Mathf.Clamp(Mathf.Abs(steeringVel), 0, maxVelocity) / maxVelocity;
+        currentValue = frictionCurve.Evaluate(currentPercent);
+    }
+}
+
+

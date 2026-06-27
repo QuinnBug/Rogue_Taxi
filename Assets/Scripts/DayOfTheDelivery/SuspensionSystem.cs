@@ -8,6 +8,10 @@ public class SuspensionSystem : MonoBehaviour
     [Space]
     public Wheel[] wheels;
     public SuspensionSettings baseSettings;
+    //Side Frictions
+    public FrictionValues frontSideFriction;
+    public FrictionValues rearSideFriction;
+
     public LayerMask groundMask = new LayerMask();
 
     private Rigidbody m_rb;
@@ -23,10 +27,7 @@ public class SuspensionSystem : MonoBehaviour
     {
         foreach (Wheel wheel in wheels)
         {
-            if (d_bApplyBaseSettings)
-            {
-                wheel.settings = baseSettings;
-            }
+            if (d_bApplyBaseSettings) { UpdateWheelSettings(wheel); }
 
             wheel.PhysicsUpdate(m_rb);
         }
@@ -46,19 +47,30 @@ public class SuspensionSystem : MonoBehaviour
         return groundedI / wheels.Length;
     }
 
+    void UpdateWheelSettings(Wheel wheel)
+    {
+        wheel.settings = baseSettings;
+
+        if (wheel.offset.z > 0)
+        {
+            wheel.sideFriction = frontSideFriction;
+        }
+        else
+        {
+            wheel.sideFriction = rearSideFriction;
+        }
+    }
+
     private void OnDrawGizmos()
     {
         if (wheels == null) { return; }
 
         foreach (Wheel wheel in wheels)
         {
-            if (d_bApplyBaseSettings)
-            {
-                wheel.settings = baseSettings;
-            }
+            if (d_bApplyBaseSettings) { UpdateWheelSettings(wheel); }
         }
 
-        if(m_rb != null)
+        if (m_rb != null)
         {
             Gizmos.color = Color.hotPink;
             Gizmos.DrawLine(transform.position, transform.position + m_rb.linearVelocity);
@@ -66,14 +78,4 @@ public class SuspensionSystem : MonoBehaviour
     }
 
     //https://www.youtube.com/watch?v=x0LUiE0dxP0
-}
-
-[System.Serializable]
-public struct SuspensionSettings 
-{
-    public float restLength;
-    public float springTravel;
-    public float springStiffness;
-    public float damperStiffness;
-    public float wheelRadius;
 }

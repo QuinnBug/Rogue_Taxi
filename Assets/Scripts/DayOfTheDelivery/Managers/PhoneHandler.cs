@@ -1,5 +1,13 @@
+using System;
 using UnityEngine;
 using Utility;
+
+enum Screens
+{
+    MAP,
+    DELIVERIES,
+    UPGRADES,
+}
 
 public class PhoneHandler : MonoBehaviour
 {
@@ -9,13 +17,13 @@ public class PhoneHandler : MonoBehaviour
     public GameObject[] m_screens;
     public InputHandler m_inputs;
 
-    private bool screenChangeLock = false;
-    private int currentScreen = 0;
+    private bool navLock = false;
+    private int currentScreen = 1;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        ChangeScreen(currentScreen + 1);
+        ChangeScreen(currentScreen);
     }
 
     // Update is called once per frame
@@ -29,18 +37,18 @@ public class PhoneHandler : MonoBehaviour
 
         if (!m_phoneOpen) { return; }
 
-        if (m_inputs.phoneNav.x != 0)
+        if (m_inputs.phoneNav.x != 0 && !navLock)
         {
-            if (!screenChangeLock)
-            {
-                screenChangeLock = true;
-                ChangeScreen(currentScreen + (m_inputs.phoneNav.x > 0 ? 1 : -1));
-            }
+            navLock = true;
+            ChangeScreen(currentScreen + (m_inputs.phoneNav.x > 0 ? 1 : -1));
         }
-        else
+
+        if (m_inputs.phoneNav.magnitude == 0)
         {
-            screenChangeLock = false;
+            navLock = false;
         }
+
+        ScreenUpdate();
     }
 
     void ChangeScreen(int newScreen)
@@ -52,5 +60,28 @@ public class PhoneHandler : MonoBehaviour
         m_screens[currentScreen].SetActive(false);
         currentScreen = Lists.ClampListIndex(newScreen, m_screens.Length);
         m_screens[currentScreen].SetActive(true);
+    }
+
+    private void ScreenUpdate()
+    {
+        switch ((Screens)currentScreen)
+        {
+            case Screens.MAP:
+                break;
+            case Screens.DELIVERIES:
+                DeliveriesUpdate();
+                break;
+            case Screens.UPGRADES:
+                break;
+        }
+    }
+
+    private void DeliveriesUpdate()
+    {
+        if (m_inputs.phoneNav.y != 0 && !navLock)
+        {
+            navLock = true;
+            Delivery_Manager.Instance.ChangeCurrentDelivery(m_inputs.phoneNav.y > 0 ? 1 : -1);
+        }
     }
 }

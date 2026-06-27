@@ -299,6 +299,40 @@ public class LNode_Manager : Singleton<LNode_Manager>
         return nodeList;
     }
 
+    public NodeList GetNodesWithinRange(Vector3 _position, int _lowerLimit, int _upperLimit )
+    {
+        NodeList nodeList = new NodeList();
+
+        Vector2Int centralKey = WorldPosToMapKey(_position);
+        Vector2Int rangeKey = new Vector2Int(0, 0);
+
+        for (int x = -_upperLimit; x <= _upperLimit; ++x)
+        {
+            for (int y = -_upperLimit; y <= _upperLimit; ++y)
+            {
+                if (Mathf.Sqrt(Mathf.Pow(x,2) + Mathf.Pow(y, 2)) < _lowerLimit)
+                {
+                    continue;
+                }
+
+                rangeKey.x = centralKey.x + x;
+                rangeKey.y = centralKey.y + y;
+
+                if (rangeKey == centralKey)
+                {
+                    continue;
+                }
+
+                if (m_nodeMap.ContainsKey(rangeKey))
+                {
+                    nodeList.AddRange(m_nodeMap[rangeKey]);
+                }
+            }
+        }
+
+        return nodeList;
+    }
+
     public NodeList AllNodes()
     {
         NodeList allNodes = new NodeList();
