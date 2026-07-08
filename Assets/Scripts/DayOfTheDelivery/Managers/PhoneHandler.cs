@@ -23,6 +23,7 @@ public class PhoneHandler : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        m_inputs = FindFirstObjectByType<InputHandler>();
         ChangeScreen(currentScreen);
     }
 

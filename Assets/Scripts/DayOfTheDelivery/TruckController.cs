@@ -4,32 +4,29 @@ using UnityEngine.InputSystem;
 
 public class TruckController : MonoBehaviour
 {
-    public Transform m_bodyTransform;
-    public Transform[] m_aWheelTransforms;
+    public Transform[] m_aWheelTransforms; //for turning the front wheels - can move this to the wheel I think
     public Rigidbody m_physics;
     public SuspensionSystem m_suspension;
     public InputHandler m_inputs;
     [Space]
-    public float m_fRotationSpeed = 0;
+    public CarSettingPresets m_driveSettings;
     [Space]
-    public float m_fTurningTorque = 1;
-    public float m_fTurningVelocityMin = 1;
+    [SerializeField]
+    private EngineValues m_engine;
     [Space]
     public TruckStats m_stats;
     [Space]
+    //I'd like this bundled up into a different script I think
     public GameObject m_shotPrefab;
     public GameObject m_deliveryCannon;
+    public GameObject m_deliveryPointer;
     public float m_cannonOffset;
     public float m_cannonForce;
-    
-    [SerializeField]
-    private float m_currentAccel = 0;
-    [SerializeField]
-    private float m_revs = 0;
-    
-    private float m_turning = 0;
-    private bool m_braking = false;
 
+    private float m_revs = 0;
+    private float m_turning = 0;
+
+    //This is input stuff
     private float m_turnInput;
     private float m_moveInput;
 
@@ -41,20 +38,16 @@ public class TruckController : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
-        if (Event_Manager.Instance != null) 
+        if (Event_Manager.Instance != null)
         {
             Event_Manager.Instance.AddListener(E_Event.Buildings, E_Action.Finished, EnableInput);
         }
+        else { EnableInput(); }
     }
 
     // Update is called once per frame
     void Update()
     {
-        m_stats.Update();
-
-        m_moveInput = m_inputs.throttle;
-        m_turnInput = m_inputs.steering;
-
         if (m_inputs.fire) { Shoot(); }
 
         AccelInputHandling();
@@ -66,6 +59,7 @@ public class TruckController : MonoBehaviour
     private void FixedUpdate()
     {
         PhysicsUpdate();
+        m_suspension.WheelsUpdate(m_driveSettings);
     }
 
     private void ModelUpdate()
@@ -83,11 +77,16 @@ public class TruckController : MonoBehaviour
     private void PhysicsUpdate()
     {
         // Movement //
+        m_engine.ApplyChanges(m_driveSettings.engine);
+        float speed = Vector3.Dot(transform.forward, m_physics.linearVelocity);
+        m_engine.Update(speed);
+
         foreach (Wheel wheel in m_suspension.wheels)
         {
-            if (!wheel.grounded) { continue; }
-
-            wheel.torque = m_revs * m_stats.acceleration;
+            if (wheel.grounded && wheel.drive) 
+            {
+                wheel.torque = m_revs * m_engine.currentValue; 
+            }
         }
     }
 
@@ -98,21 +97,14 @@ public class TruckController : MonoBehaviour
 
     private void AccelInputHandling()
     {
-        //m_revs = m_moveInput * m_stats.revScale;
-        m_braking = m_revs > 0 && m_moveInput < 0;
-
-        if (Mathf.Abs(m_revs) >= 0.1f) { m_revs = Mathf.Lerp(m_revs, 0, m_stats.revDrag); }
-        else { m_revs = 0; }
-
-        m_revs += m_moveInput * m_stats.revScale;
-        m_revs = m_stats.revLimits.Clamp(m_revs);
+        m_revs = m_inputs.throttle * m_stats.revScale;
     }
 
     private void TurnInputHandling()
     {
-        if (m_turnInput != 0)
+        if (m_inputs.steering != 0)
         {
-            m_turning += m_turnInput * m_stats.turnSpeed * Time.deltaTime;
+            m_turning += m_inputs.steering * m_stats.turnSpeed * Time.deltaTime;
             m_turning = Mathf.Clamp(m_turning, -1, 1);
         }
         else if (Mathf.Abs(m_turning) <= 0.1f)
@@ -136,9 +128,9 @@ public class TruckController : MonoBehaviour
         shot.GetComponent<Rigidbody>().AddForce(m_physics.linearVelocity + (m_deliveryCannon.transform.forward * m_cannonForce));
     }
 
-    public void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawSphere( transform.position + m_physics.centerOfMass, 0.5f);
-    }
+    //public void OnDrawGizmosSelected()
+    //{
+    //    Gizmos.color = Color.yellow;
+    //    Gizmos.DrawSphere( transform.position + m_physics.centerOfMass, 0.5f);
+    //}
 }

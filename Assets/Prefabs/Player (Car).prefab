@@ -16,7 +16,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2879693651765829105
 Transform:
   m_ObjectHideFlags: 0
@@ -118,8 +118,8 @@ Transform:
   m_GameObject: {fileID: 928518314820165041}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.55, y: -0.45, z: 0.8}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 1, y: -0.95000005, z: 1.5}
+  m_LocalScale: {x: 1.7500001, y: 1.7500001, z: 1.7500001}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 8635745173576337239}
@@ -192,40 +192,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 495a3ecd5233c39468953da94f9efc3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Wheel
-  offset: {x: 0.55, y: 0, z: 0.8}
+  offset: {x: 1, y: -0.15, z: 1.5}
   settings:
     restLength: 1
-    springTravel: 0.25
-    springStiffness: 100
-    damperStiffness: 3
+    springTravel: 0.6
+    springStiffness: 150
+    damperStiffness: 5
     wheelRadius: 0.8
   groundMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  fwdDrag:
-    frictionCurve:
-      serializedVersion: 2
-      m_Curve: []
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    maxVelocity: 0
-  sideFriction:
+  drive: 0
+  fwdFriction:
     frictionCurve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.975
-        inSlope: 0.671733
-        outSlope: 0.671733
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.38112622
-      - serializedVersion: 3
-        time: 0.1
-        value: 1
+        value: 0.1
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -233,29 +217,55 @@ MonoBehaviour:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 0.5
-        value: 0.975
-        inSlope: -0.17222095
-        outSlope: -0.17222095
-        tangentMode: 0
+        time: 1
+        value: 0.1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
-        outWeight: 0.15012038
-      - serializedVersion: 3
-        time: 1
-        value: 0.95
-        inSlope: -0.0045062946
-        outSlope: -0.0045062946
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.16737413
         outWeight: 0.33333334
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    maxVelocity: 50
+    currentPercent: 0
+  sideFriction:
+    frictionCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0.8
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 0.4
+        value: 0.6
+        inSlope: -0.3
+        outSlope: -0.3
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: 0.5
+        inSlope: -0.20474704
+        outSlope: -0.20474704
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.09218027
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    currentPercent: 0
+  wheelMass: 0.035
   torqueDrag: 0
-  wheelMass: 0.03
   springMoveSpeed: 50
 --- !u!1 &2017058093542816501
 GameObject:
@@ -268,7 +278,6 @@ GameObject:
   - component: {fileID: 7747815597663323844}
   - component: {fileID: 7520134153419638855}
   - component: {fileID: 591599812677479681}
-  - component: {fileID: 2636540830330336591}
   m_Layer: 7
   m_Name: Cylinder
   m_TagString: Untagged
@@ -285,8 +294,8 @@ Transform:
   m_GameObject: {fileID: 2017058093542816501}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.5, z: -0.286}
-  m_LocalScale: {x: 0.21, y: 0.21, z: 0.21}
+  m_LocalPosition: {x: 0, y: 1.25, z: -0.57}
+  m_LocalScale: {x: 0.24999999, y: 0.24999999, z: 0.24999999}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 2653637306401739942}
@@ -348,29 +357,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &2636540830330336591
-CapsuleCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2017058093542816501}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 0
-  serializedVersion: 2
-  m_Radius: 0.5000001
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
 --- !u!1 &4329223055329290098
 GameObject:
   m_ObjectHideFlags: 0
@@ -399,8 +385,8 @@ Transform:
   m_GameObject: {fileID: 4329223055329290098}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.55, y: -0.45, z: -0.8}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -1, y: -0.8499999, z: -1.5}
+  m_LocalScale: {x: 1.7500001, y: 1.7500001, z: 1.7500001}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 8635745173576337239}
@@ -473,40 +459,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 495a3ecd5233c39468953da94f9efc3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Wheel
-  offset: {x: -0.55, y: 0, z: -0.8}
+  offset: {x: -1, y: -0.15, z: -1.5}
   settings:
     restLength: 1
-    springTravel: 0.25
-    springStiffness: 100
-    damperStiffness: 3
+    springTravel: 0.5
+    springStiffness: 150
+    damperStiffness: 5
     wheelRadius: 0.8
   groundMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  fwdDrag:
-    frictionCurve:
-      serializedVersion: 2
-      m_Curve: []
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    maxVelocity: 0
-  sideFriction:
+  drive: 1
+  fwdFriction:
     frictionCurve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.95
-        inSlope: 0.671733
-        outSlope: 0.671733
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.38112622
-      - serializedVersion: 3
-        time: 0.2
-        value: 1
+        value: 0.1
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -514,29 +484,64 @@ MonoBehaviour:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 0.5
-        value: 0.975
-        inSlope: -0.17222095
-        outSlope: -0.17222095
-        tangentMode: 0
+        time: 1
+        value: 0.1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
-        outWeight: 0.15012038
-      - serializedVersion: 3
-        time: 1
-        value: 0.925
-        inSlope: -0.0045062946
-        outSlope: -0.0045062946
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.16737413
         outWeight: 0.33333334
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    maxVelocity: 60
+    currentPercent: 0
+  sideFriction:
+    frictionCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0.8
+        inSlope: -0.13943781
+        outSlope: -0.13943781
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.119526275
+      - serializedVersion: 3
+        time: 0.35
+        value: 0.75
+        inSlope: -0.15620573
+        outSlope: -1.2104896
+        tangentMode: 1
+        weightedMode: 0
+        inWeight: 0.12194029
+        outWeight: 0.09637962
+      - serializedVersion: 3
+        time: 0.6
+        value: 0.45
+        inSlope: -1.2316264
+        outSlope: -0.15521982
+        tangentMode: 1
+        weightedMode: 0
+        inWeight: 0.10555147
+        outWeight: 0.115043975
+      - serializedVersion: 3
+        time: 1
+        value: 0.4
+        inSlope: -0.13959995
+        outSlope: -0.25000003
+        tangentMode: 1
+        weightedMode: 0
+        inWeight: 0.10659725
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    currentPercent: 0
+  wheelMass: 0.035
   torqueDrag: 0
-  wheelMass: 0.03
   springMoveSpeed: 50
 --- !u!1 &5796577198427982587
 GameObject:
@@ -566,8 +571,8 @@ Transform:
   m_GameObject: {fileID: 5796577198427982587}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.55, y: -0.45, z: 0.8}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: -1, y: -0.95000005, z: 1.5}
+  m_LocalScale: {x: 1.7500001, y: 1.7500001, z: 1.7500001}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 8635745173576337239}
@@ -640,40 +645,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 495a3ecd5233c39468953da94f9efc3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Wheel
-  offset: {x: -0.55, y: 0, z: 0.8}
+  offset: {x: -1, y: -0.15, z: 1.5}
   settings:
     restLength: 1
-    springTravel: 0.25
-    springStiffness: 100
-    damperStiffness: 3
+    springTravel: 0.6
+    springStiffness: 150
+    damperStiffness: 5
     wheelRadius: 0.8
   groundMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  fwdDrag:
-    frictionCurve:
-      serializedVersion: 2
-      m_Curve: []
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    maxVelocity: 0
-  sideFriction:
+  drive: 0
+  fwdFriction:
     frictionCurve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.975
-        inSlope: 0.671733
-        outSlope: 0.671733
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.38112622
-      - serializedVersion: 3
-        time: 0.1
-        value: 1
+        value: 0.1
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -681,29 +670,55 @@ MonoBehaviour:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 0.5
-        value: 0.975
-        inSlope: -0.17222095
-        outSlope: -0.17222095
-        tangentMode: 0
+        time: 1
+        value: 0.1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
-        outWeight: 0.15012038
-      - serializedVersion: 3
-        time: 1
-        value: 0.95
-        inSlope: -0.0045062946
-        outSlope: -0.0045062946
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.16737413
         outWeight: 0.33333334
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    maxVelocity: 50
+    currentPercent: 0
+  sideFriction:
+    frictionCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0.8
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 0.4
+        value: 0.6
+        inSlope: -0.3
+        outSlope: -0.3
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: 0.5
+        inSlope: -0.20474704
+        outSlope: -0.20474704
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.09218027
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    currentPercent: 0
+  wheelMass: 0.035
   torqueDrag: 0
-  wheelMass: 0.03
   springMoveSpeed: 50
 --- !u!1 &6422763426974868842
 GameObject:
@@ -734,8 +749,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: -0.35, z: -0.024999999}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 1.7500001, y: 1.7500001, z: 1.7500001}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 8635745173576337239}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -978,7 +993,7 @@ Rigidbody:
   m_GameObject: {fileID: 8550650907020814402}
   serializedVersion: 5
   m_Mass: 5
-  m_LinearDamping: 1
+  m_LinearDamping: 0
   m_AngularDamping: 1
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 100, y: 25, z: 150}
@@ -989,7 +1004,7 @@ Rigidbody:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_ImplicitCom: 0
+  m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 0
   m_IsKinematic: 0
@@ -1008,34 +1023,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f28fae583bfd54444ae55db055220a04, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TruckController
-  m_bodyTransform: {fileID: 0}
   m_aWheelTransforms:
   - {fileID: 7507872768116452766}
   - {fileID: 779164599231770947}
   m_physics: {fileID: 1684035440427140382}
   m_suspension: {fileID: 8231434879047456012}
   m_inputs: {fileID: 4730328815238103991}
-  m_fRotationSpeed: 2
-  m_fTurningTorque: 12
-  m_fTurningVelocityMin: 1
+  m_driveSettings: {fileID: 11400000, guid: 1faf3f3dd0d3c0f418123b2615309a19, type: 2}
+  m_engine:
+    torqueCurve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    maxSpeed: 0
+    currentPercent: 0
   m_stats:
-    speedScaling: 1
-    baseAcceleration: 1
-    revScale: 0.25
-    revDrag: 0.01
-    revLimits:
-      min: -1
-      max: 3
+    revScale: 2.5
     turnSpeed: 2
     turnResetRate: 5
-    fTurnLimit: 50
+    fTurnLimit: 30
     fWheelLimit: 30
   m_shotPrefab: {fileID: 7185162933015889852, guid: 3deed2ddcc44279439d6b6bbd1f1a8d3, type: 3}
   m_deliveryCannon: {fileID: 3429576596971621916}
+  m_deliveryPointer: {fileID: 2017058093542816501}
   m_cannonOffset: 2
   m_cannonForce: 3000
-  m_currentAccel: 0
-  m_revs: 0
 --- !u!114 &8231434879047456012
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1057,98 +1071,10 @@ MonoBehaviour:
   - {fileID: 4666418458185013842}
   baseSettings:
     restLength: 1
-    springTravel: 0.25
-    springStiffness: 100
-    damperStiffness: 3
+    springTravel: 0.5
+    springStiffness: 800
+    damperStiffness: 10
     wheelRadius: 0.8
-  frontSideFriction:
-    frictionCurve:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 0.975
-        inSlope: 0.671733
-        outSlope: 0.671733
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.38112622
-      - serializedVersion: 3
-        time: 0.1
-        value: 1
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.5
-        value: 0.975
-        inSlope: -0.17222095
-        outSlope: -0.17222095
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.15012038
-      - serializedVersion: 3
-        time: 1
-        value: 0.95
-        inSlope: -0.0045062946
-        outSlope: -0.0045062946
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.16737413
-        outWeight: 0.33333334
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    maxVelocity: 50
-  rearSideFriction:
-    frictionCurve:
-      serializedVersion: 2
-      m_Curve:
-      - serializedVersion: 3
-        time: 0
-        value: 0.95
-        inSlope: 0.671733
-        outSlope: 0.671733
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.38112622
-      - serializedVersion: 3
-        time: 0.2
-        value: 1
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.5
-        value: 0.975
-        inSlope: -0.17222095
-        outSlope: -0.17222095
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.15012038
-      - serializedVersion: 3
-        time: 1
-        value: 0.925
-        inSlope: -0.0045062946
-        outSlope: -0.0045062946
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.16737413
-        outWeight: 0.33333334
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    maxVelocity: 60
   groundMask:
     serializedVersion: 2
     m_Bits: 1019
@@ -1180,8 +1106,8 @@ Transform:
   m_GameObject: {fileID: 8558760728831745955}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.55, y: -0.45, z: -0.8}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 1, y: -0.8499999, z: -1.5}
+  m_LocalScale: {x: 1.7500001, y: 1.7500001, z: 1.7500001}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 8635745173576337239}
@@ -1254,40 +1180,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 495a3ecd5233c39468953da94f9efc3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Wheel
-  offset: {x: 0.55, y: 0, z: -0.8}
+  offset: {x: 1, y: -0.15, z: -1.5}
   settings:
     restLength: 1
-    springTravel: 0.25
-    springStiffness: 100
-    damperStiffness: 3
+    springTravel: 0.5
+    springStiffness: 150
+    damperStiffness: 5
     wheelRadius: 0.8
   groundMask:
     serializedVersion: 2
     m_Bits: 4294967295
-  fwdDrag:
-    frictionCurve:
-      serializedVersion: 2
-      m_Curve: []
-      m_PreInfinity: 2
-      m_PostInfinity: 2
-      m_RotationOrder: 4
-    maxVelocity: 0
-  sideFriction:
+  drive: 1
+  fwdFriction:
     frictionCurve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.95
-        inSlope: 0.671733
-        outSlope: 0.671733
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.33333334
-        outWeight: 0.38112622
-      - serializedVersion: 3
-        time: 0.2
-        value: 1
+        value: 0.1
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -1295,29 +1205,64 @@ MonoBehaviour:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 0.5
-        value: 0.975
-        inSlope: -0.17222095
-        outSlope: -0.17222095
-        tangentMode: 0
+        time: 1
+        value: 0.1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
-        outWeight: 0.15012038
-      - serializedVersion: 3
-        time: 1
-        value: 0.925
-        inSlope: -0.0045062946
-        outSlope: -0.0045062946
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.16737413
         outWeight: 0.33333334
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    maxVelocity: 60
+    currentPercent: 0
+  sideFriction:
+    frictionCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0.8
+        inSlope: -0.13943781
+        outSlope: -0.13943781
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.119526275
+      - serializedVersion: 3
+        time: 0.35
+        value: 0.75
+        inSlope: -0.15620573
+        outSlope: -1.2104896
+        tangentMode: 1
+        weightedMode: 0
+        inWeight: 0.12194029
+        outWeight: 0.09637962
+      - serializedVersion: 3
+        time: 0.6
+        value: 0.45
+        inSlope: -1.2316264
+        outSlope: -0.15521982
+        tangentMode: 1
+        weightedMode: 0
+        inWeight: 0.10555147
+        outWeight: 0.115043975
+      - serializedVersion: 3
+        time: 1
+        value: 0.4
+        inSlope: -0.13959995
+        outSlope: -0.25000003
+        tangentMode: 1
+        weightedMode: 0
+        inWeight: 0.10659725
+        outWeight: 0
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    currentPercent: 0
+  wheelMass: 0.035
   torqueDrag: 0
-  wheelMass: 0.03
   springMoveSpeed: 50
 --- !u!1001 &2547107125234086733
 PrefabInstance:

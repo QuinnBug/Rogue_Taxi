@@ -14,7 +14,7 @@ public class Delivery_Manager : Singleton<Delivery_Manager>
 
     public int m_currentDeliveryId = -1;
 
-    private GameObject m_player;
+    private TruckController m_player;
 
     public GameObject pointer;
 
@@ -25,7 +25,8 @@ public class Delivery_Manager : Singleton<Delivery_Manager>
     private void Start()
     {
         Event_Manager.Instance.AddListener(E_Event.Buildings, E_Action.Finished, StartDeliveryClock);
-        m_player = FindAnyObjectByType<TruckController>().gameObject;
+        m_player = FindAnyObjectByType<TruckController>();
+        pointer = m_player.m_deliveryPointer;
     }
 
     void StartDeliveryClock()

@@ -30,7 +30,7 @@ public class EnemyBase : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.collider.gameObject == m_player.m_bodyTransform.gameObject)
+        if (collision.collider.gameObject.CompareTag("Player"))
         {
             m_agent.enabled = false;
             m_dead = true;

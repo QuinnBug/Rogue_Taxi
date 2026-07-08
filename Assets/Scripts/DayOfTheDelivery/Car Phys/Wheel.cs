@@ -1,4 +1,5 @@
 using System.IO;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.PlayerLoop;
 
@@ -13,17 +14,20 @@ public class Wheel : MonoBehaviour
     public Vector3 offset;
     public SuspensionSettings settings;
     public LayerMask groundMask;
-    
+    [Space]
+    public bool drive;
+    [Space]
     //Drive
-    public FrictionValues fwdDrag;
+    public FrictionValues fwdFriction;
     public FrictionValues sideFriction;
+    public float wheelMass;
 
     internal float torque;
     [Range(0.0f, 1.0f)] public float torqueDrag;
-    public float wheelMass;
 
     Vector3 fwdForce = Vector3.zero;
     Vector3 sideForce = Vector3.zero;
+    Vector3 driveForce = Vector3.zero;
 
     //Suspension
     private float maxLength;
@@ -42,17 +46,29 @@ public class Wheel : MonoBehaviour
     public void UpdateForces(Rigidbody _rb)
     {
         // Acceleration
-        var fwdForce = (forward * torque) / Time.fixedDeltaTime;
-        _rb.AddForce(fwdForce);
+        if (drive) { 
+            driveForce = (transform.forward * torque) / Time.fixedDeltaTime;
+            _rb.AddForceAtPosition(driveForce, transform.position);
+        }
+        
+        fwdForce = GetFrictionForce(_rb, transform.forward, fwdFriction);
+        _rb.AddForceAtPosition(fwdForce, transform.position);
 
-        // Steering
-        Vector3 steerDir = transform.right;
-        Vector3 tireWorldVel = _rb.GetPointVelocity(transform.position);
-        float steeringVel = Vector3.Dot(steerDir, tireWorldVel);
-        sideFriction.Update(steeringVel);
-        float desiredVelChange = -steeringVel * sideFriction.currentValue;
+        sideForce = GetFrictionForce(_rb, transform.right, sideFriction);
+        _rb.AddForceAtPosition(sideForce, transform.position);
+    }
+
+    private Vector3 GetFrictionForce(Rigidbody _rb, Vector3 direction, FrictionValues friction)
+    {
+        Vector3 tireWorldVel = _rb.GetPointVelocity(hingePosition);
+        float velInDirection = Vector3.Dot(direction, tireWorldVel);
+        friction.Update(velInDirection, tireWorldVel.magnitude);
+
+        float desiredVelChange = -velInDirection * friction.currentValue;
         float desiredAccel = desiredVelChange / Time.fixedDeltaTime;
-        _rb.AddForceAtPosition(steerDir * wheelMass * desiredAccel, transform.position);
+        Vector3 force = direction * wheelMass * desiredAccel;
+
+        return force;
     }
 
     public void UpdatePosition(Transform _parent)
@@ -83,8 +99,6 @@ public class Wheel : MonoBehaviour
 
         right = Quaternion.Euler(0, 90, 0) * forward;
         transform.position = groundPos + (transform.up * settings.wheelRadius);
-        Debug.DrawLine(transform.position, transform.position + forward, Color.yellow);
-        Debug.DrawLine(transform.position, transform.position + right, Color.cyan);
 
         return grounded;
     }
@@ -101,19 +115,34 @@ public class Wheel : MonoBehaviour
         return springDir * force;
     }
 
-    private void OnDrawGizmosSelected()
+    private void OnDrawGizmos()
     {
-        if (fwdForce.magnitude > 0)
+        if (driveForce.magnitude > 0)
         {
-            Gizmos.color = Color.blue;
-            Gizmos.DrawLine(transform.position, transform.position + fwdForce);
+            Gizmos.color = Color.lavender;
+            Gizmos.DrawLine(hingePosition, hingePosition + driveForce);
         }
 
-        if (sideForce.magnitude > 0) 
+        if (fwdForce.magnitude > 0)
         {
-            Gizmos.color = Color.red;
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawLine(hingePosition, hingePosition + fwdForce);
+        }
+
+        if (sideForce.magnitude > 0)
+        {
+            Gizmos.color = Color.yellow;
             Gizmos.DrawLine(hingePosition, hingePosition + sideForce);
         }
+
+        Handles.Label(
+            hingePosition + Vector3.up * 2 + Vector3.back * 0.5f,
+            ((int)(fwdFriction.currentPercent * 100)).ToString()
+        );
+        Handles.Label(
+            hingePosition + Vector3.up * 2 + Vector3.back * 1.0f,
+            ((int)(sideFriction.currentPercent * 100)).ToString()
+            );
 
         if (!Application.isPlaying)
         {
@@ -142,24 +171,6 @@ public struct SuspensionSettings
     public float springStiffness;
     public float damperStiffness;
     public float wheelRadius;
-}
-
-[System.Serializable]
-public class FrictionValues
-{
-    // Settings
-    public AnimationCurve frictionCurve;
-    public float maxVelocity;
-
-    //Variables
-    private float currentPercent;
-    [Range(0.0f, 1.0f)] internal float currentValue;
-
-    public void Update(float steeringVel)
-    {
-        currentPercent = Mathf.Clamp(Mathf.Abs(steeringVel), 0, maxVelocity) / maxVelocity;
-        currentValue = frictionCurve.Evaluate(currentPercent);
-    }
 }
 
 

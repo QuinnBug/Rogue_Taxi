@@ -8,9 +8,6 @@ public class SuspensionSystem : MonoBehaviour
     [Space]
     public Wheel[] wheels;
     public SuspensionSettings baseSettings;
-    //Side Frictions
-    public FrictionValues frontSideFriction;
-    public FrictionValues rearSideFriction;
 
     public LayerMask groundMask = new LayerMask();
 
@@ -23,11 +20,11 @@ public class SuspensionSystem : MonoBehaviour
     }
 
     // Update is called once per frame
-    void FixedUpdate()
+    public void WheelsUpdate(CarSettingPresets settings)
     {
         foreach (Wheel wheel in wheels)
         {
-            if (d_bApplyBaseSettings) { UpdateWheelSettings(wheel); }
+            if (d_bApplyBaseSettings) { UpdateWheelSettings(wheel, settings); }
 
             wheel.PhysicsUpdate(m_rb);
         }
@@ -47,34 +44,12 @@ public class SuspensionSystem : MonoBehaviour
         return groundedI / wheels.Length;
     }
 
-    void UpdateWheelSettings(Wheel wheel)
+    void UpdateWheelSettings(Wheel wheel, CarSettingPresets carSettings)
     {
         wheel.settings = baseSettings;
-
-        if (wheel.offset.z > 0)
-        {
-            wheel.sideFriction = frontSideFriction;
-        }
-        else
-        {
-            wheel.sideFriction = rearSideFriction;
-        }
-    }
-
-    private void OnDrawGizmos()
-    {
-        if (wheels == null) { return; }
-
-        foreach (Wheel wheel in wheels)
-        {
-            if (d_bApplyBaseSettings) { UpdateWheelSettings(wheel); }
-        }
-
-        if (m_rb != null)
-        {
-            Gizmos.color = Color.hotPink;
-            Gizmos.DrawLine(transform.position, transform.position + m_rb.linearVelocity);
-        }
+        wheel.wheelMass = carSettings.wheelMass;
+        wheel.fwdFriction.ApplyChanges(wheel.offset.z > 0 ? carSettings.frontFwdFriction : carSettings.rearFwdFriction);
+        wheel.sideFriction.ApplyChanges(wheel.offset.z > 0 ? carSettings.frontSideFriction : carSettings.rearSideFriction);
     }
 
     //https://www.youtube.com/watch?v=x0LUiE0dxP0

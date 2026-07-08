@@ -6,14 +6,7 @@ using UnityEngine;
 public struct TruckStats 
 {
     // Driving
-    [SerializeField]
-    private float speedScaling;
-    [SerializeField]
-    private float baseAcceleration;
     public float revScale;
-    public float revDrag;
-    public Range<float> revLimits;
-
 
     // Steering
     [SerializeField]
@@ -25,15 +18,4 @@ public struct TruckStats
     [SerializeField]
     public float fWheelLimit;
 
-    internal float acceleration;
-
-    public void Init() 
-    {
-        Update();
-    }
-
-    public void Update()
-    {
-        acceleration = baseAcceleration * speedScaling;
-    }
 }

@@ -16,6 +16,11 @@ public class Minimap_Manager : Singleton<Minimap_Manager>
     public bool m_followPlayer;
     public bool m_fixedNorth;
 
+    private void Start()
+    {
+        m_player = FindFirstObjectByType<TruckController>();
+    }
+
     // Update is called once per frame
     void Update()
     {
