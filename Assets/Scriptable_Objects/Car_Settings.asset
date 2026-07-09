@@ -19,14 +19,14 @@ MonoBehaviour:
       - serializedVersion: 3
         time: 0
         value: 0.50249636
-        inSlope: 3.2313375
-        outSlope: 3.2313375
+        inSlope: 7.7347765
+        outSlope: 7.7347765
         tangentMode: 0
         weightedMode: 0
         inWeight: 0.33333334
-        outWeight: 0.05309734
+        outWeight: 0.052292835
       - serializedVersion: 3
-        time: 0.3
+        time: 0.19999999
         value: 1
         inSlope: 0
         outSlope: 0
@@ -64,20 +64,20 @@ MonoBehaviour:
       - serializedVersion: 3
         time: 0
         value: 0
-        inSlope: 0.05
-        outSlope: 0.05
-        tangentMode: 34
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
         weightedMode: 0
         inWeight: 0
-        outWeight: 0.33333334
+        outWeight: 0.047465805
       - serializedVersion: 3
         time: 1
         value: 0.05
-        inSlope: 0.05
-        outSlope: 0.05
-        tangentMode: 34
+        inSlope: 0.14797586
+        outSlope: 0.14797586
+        tangentMode: 0
         weightedMode: 0
-        inWeight: 0.33333334
+        inWeight: 0.03700733
         outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
@@ -90,20 +90,20 @@ MonoBehaviour:
       - serializedVersion: 3
         time: 0
         value: 0
-        inSlope: 0.05
-        outSlope: 0.05
-        tangentMode: 34
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 0
         weightedMode: 0
         inWeight: 0
-        outWeight: 0.33333334
+        outWeight: 0.047465805
       - serializedVersion: 3
         time: 1
         value: 0.05
-        inSlope: 0.05
-        outSlope: 0.05
-        tangentMode: 34
+        inSlope: 0.14797586
+        outSlope: 0.14797586
+        tangentMode: 0
         weightedMode: 0
-        inWeight: 0.33333334
+        inWeight: 0.03700733
         outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
@@ -115,7 +115,7 @@ MonoBehaviour:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 1
+        value: 0.6
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -123,26 +123,26 @@ MonoBehaviour:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 0.4
-        value: 1
-        inSlope: 0
-        outSlope: 0
+        time: 0.3
+        value: 0.5
+        inSlope: -0.3571429
+        outSlope: -0.3571429
         tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 0.7
-        value: 0.85
-        inSlope: -0.3333333
-        outSlope: -0.3333333
+        value: 0.35
+        inSlope: -0.28571418
+        outSlope: -0.28571418
         tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 1
-        value: 0.8
+        value: 0.3
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -159,7 +159,7 @@ MonoBehaviour:
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 1
+        value: 0.7
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -168,16 +168,16 @@ MonoBehaviour:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 0.3
-        value: 1
-        inSlope: 0
-        outSlope: 0
-        tangentMode: 136
+        value: 0.55
+        inSlope: -0.6337005
+        outSlope: -0.6337005
+        tangentMode: 0
         weightedMode: 0
-        inWeight: 0.33333334
+        inWeight: 0.14445156
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 0.7
-        value: 0.8
+        value: 0.35
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -186,7 +186,7 @@ MonoBehaviour:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 1
-        value: 0.8
+        value: 0.35
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -197,4 +197,4 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
     currentPercent: 0
-  wheelMass: 0.2
+  wheelMass: 0.25

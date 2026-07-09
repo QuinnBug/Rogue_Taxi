@@ -14,8 +14,6 @@ public struct TruckStats
     [SerializeField]
     public float turnResetRate;
     [SerializeField]
-    public float fTurnLimit;
-    [SerializeField]
     public float fWheelLimit;
 
 }

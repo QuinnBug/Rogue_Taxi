@@ -1,10 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.UIElements;
 public class SuspensionSystem : MonoBehaviour
 {
     public bool d_bShowPoints;
     public bool d_bApplyBaseSettings;
+    public bool d_bCalcDefaultSpringForce;
     [Space]
     public Wheel[] wheels;
     public SuspensionSettings baseSettings;
@@ -50,6 +53,14 @@ public class SuspensionSystem : MonoBehaviour
         wheel.wheelMass = carSettings.wheelMass;
         wheel.fwdFriction.ApplyChanges(wheel.offset.z > 0 ? carSettings.frontFwdFriction : carSettings.rearFwdFriction);
         wheel.sideFriction.ApplyChanges(wheel.offset.z > 0 ? carSettings.frontSideFriction : carSettings.rearSideFriction);
+    }
+
+    private void OnValidate()
+    {
+        if (d_bCalcDefaultSpringForce)
+        {
+            baseSettings.springStiffness = m_rb.mass * 9.8f / 4.0f / (baseSettings.springTravel * 0.5f);
+        }
     }
 
     //https://www.youtube.com/watch?v=x0LUiE0dxP0

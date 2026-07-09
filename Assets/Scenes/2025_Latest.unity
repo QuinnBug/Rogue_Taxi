@@ -1611,6 +1611,9 @@ MonoBehaviour:
   - {fileID: 515708413}
   - {fileID: 1031067678}
   m_inputs: {fileID: 0}
+  mapMode: 0
+  deliveryLabelPrefab: {fileID: 0}
+  upgradeMode: 0
 --- !u!1001 &1900025184
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1619,9 +1622,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 6881629318576706497, guid: 376e3b28b5e2b5843b5b6f9211829831, type: 3}
-      propertyPath: m_stats.revScale
-      value: 3
+    - target: {fileID: 8231434879047456012, guid: 376e3b28b5e2b5843b5b6f9211829831, type: 3}
+      propertyPath: baseSettings.springStiffness
+      value: 800
       objectReference: {fileID: 0}
     - target: {fileID: 8550650907020814402, guid: 376e3b28b5e2b5843b5b6f9211829831, type: 3}
       propertyPath: m_Name
@@ -2065,10 +2068,10 @@ MonoBehaviour:
       - lo
       - ro
     axiom: o
-    finalString: 'f[ffff[<<ffflt]<ff[rt]]<ff[>>ffffrt]>ff[rt]'
+    finalString: f>ff<fff<f>f<ff<ffffff<f<ff
     randomRuleOutput: 1
-  count: 10
-  angle: 90
+  count: 12
+  angle: 45
   m_length: 100
   m_nodeLimitRange:
     min: 50

@@ -8,8 +8,7 @@ public class Wheel : MonoBehaviour
     internal Vector3 hingePosition;
     internal bool grounded = false;
     internal Vector3 groundPos;
-    internal Vector3 forward = Vector3.zero;
-    internal Vector3 right = Vector3.zero;
+    internal Vector3 groundNormal = Vector3.zero;
 
     public Vector3 offset;
     public SuspensionSettings settings;
@@ -38,7 +37,7 @@ public class Wheel : MonoBehaviour
         UpdatePosition(_rb.transform);
         if (UpdateSpringLength(-transform.up))
         {
-            _rb.AddForceAtPosition(GetSuspensionForce(_rb, transform.up), hingePosition);
+            _rb.AddForceAtPosition(GetSuspensionForce(_rb, groundNormal), hingePosition);
             UpdateForces(_rb);
         }
     }
@@ -88,16 +87,15 @@ public class Wheel : MonoBehaviour
 
             Vector3 wheelOut = transform.right;
             var rot = Quaternion.AngleAxis(90, wheelOut);
-            forward = rot * hit.normal;
+            groundNormal = hit.normal;
         }
         else
         {
             grounded = false;
             groundPos = hingePosition + (_dir * maxLength);
-            forward = transform.forward;
+            groundNormal = transform.up;
         }
 
-        right = Quaternion.Euler(0, 90, 0) * forward;
         transform.position = groundPos + (transform.up * settings.wheelRadius);
 
         return grounded;
@@ -107,7 +105,7 @@ public class Wheel : MonoBehaviour
     {
         //force = (offset * strength) - (velocity * damping)
 
-        Vector3 springDir = transform.up;
+        Vector3 springDir = _dir;
         Vector3 tireWorldVel = _rb.GetPointVelocity(transform.position);
         float offset = settings.restLength - Vector3.Distance(hingePosition, groundPos);
         float vel = Vector3.Dot(springDir, tireWorldVel);
@@ -117,31 +115,39 @@ public class Wheel : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        if (driveForce.magnitude > 0)
-        {
-            Gizmos.color = Color.lavender;
-            Gizmos.DrawLine(hingePosition, hingePosition + driveForce);
-        }
+        //if (driveForce.magnitude > 0)
+        //{
+        //    Gizmos.color = Color.lavender;
+        //    Gizmos.DrawLine(hingePosition, hingePosition + driveForce);
+        //}
 
         if (fwdForce.magnitude > 0)
         {
             Gizmos.color = Color.cyan;
-            Gizmos.DrawLine(hingePosition, hingePosition + fwdForce);
+            Gizmos.DrawLine(hingePosition, hingePosition + (-transform.forward * fwdFriction.currentPercent));
         }
 
         if (sideForce.magnitude > 0)
         {
             Gizmos.color = Color.yellow;
-            Gizmos.DrawLine(hingePosition, hingePosition + sideForce);
+            Gizmos.DrawLine(hingePosition, hingePosition + (transform.right * sideFriction.currentPercent));
         }
 
+        //Handles.Label(
+        //    hingePosition + Vector3.up * 2 + Vector3.back * 0.5f,
+        //    ((int)(fwdFriction.currentPercent * 100)).ToString()
+        //);
+        //Handles.Label(
+        //    hingePosition + Vector3.up * 2 + Vector3.back * 1.0f,
+        //    ((int)(sideFriction.currentPercent * 100)).ToString()
+        //    );
         Handles.Label(
             hingePosition + Vector3.up * 2 + Vector3.back * 0.5f,
-            ((int)(fwdFriction.currentPercent * 100)).ToString()
+            fwdFriction.currentValue.ToString()
         );
         Handles.Label(
             hingePosition + Vector3.up * 2 + Vector3.back * 1.0f,
-            ((int)(sideFriction.currentPercent * 100)).ToString()
+            sideFriction.currentValue.ToString()
             );
 
         if (!Application.isPlaying)

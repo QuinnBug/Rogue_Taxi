@@ -20,11 +20,18 @@ public class PhoneHandler : MonoBehaviour
     private bool navLock = false;
     private int currentScreen = 1;
 
+    [Header("Map Variables")]
+    public bool mapMode;
+    [Header("Delivery Variables")]
+    public GameObject deliveryLabelPrefab;
+    [Header("Upgrade Variables")]
+    public bool upgradeMode;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         m_inputs = FindFirstObjectByType<InputHandler>();
-        ChangeScreen(currentScreen);
+        ChangeScreen(0);
     }
 
     // Update is called once per frame

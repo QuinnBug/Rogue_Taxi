@@ -15,6 +15,7 @@ public class TruckController : MonoBehaviour
     private EngineValues m_engine;
     [Space]
     public TruckStats m_stats;
+    public float m_debugSpeed = 10;
     [Space]
     //I'd like this bundled up into a different script I think
     public GameObject m_shotPrefab;
@@ -58,13 +59,18 @@ public class TruckController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (m_inputs.phoneNav.x != 0)
+        {
+            m_physics.AddForce(transform.right * m_debugSpeed * m_inputs.phoneNav.x);
+        }
+
         PhysicsUpdate();
         m_suspension.WheelsUpdate(m_driveSettings);
     }
 
     private void ModelUpdate()
     {
-        float steeringDir = m_turning * m_stats.fTurnLimit;
+        float steeringDir = m_turning * m_stats.fWheelLimit;
 
         //Wheel Rot
         float wheelDir = Mathf.Clamp(steeringDir, -m_stats.fWheelLimit, m_stats.fWheelLimit);

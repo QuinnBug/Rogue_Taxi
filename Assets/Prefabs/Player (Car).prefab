@@ -1040,11 +1040,11 @@ MonoBehaviour:
     maxSpeed: 0
     currentPercent: 0
   m_stats:
-    revScale: 2.5
-    turnSpeed: 2
+    revScale: 3
+    turnSpeed: 3
     turnResetRate: 5
-    fTurnLimit: 30
     fWheelLimit: 30
+  m_debugSpeed: 10
   m_shotPrefab: {fileID: 7185162933015889852, guid: 3deed2ddcc44279439d6b6bbd1f1a8d3, type: 3}
   m_deliveryCannon: {fileID: 3429576596971621916}
   m_deliveryPointer: {fileID: 2017058093542816501}
@@ -1064,6 +1064,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SuspensionSystem
   d_bShowPoints: 0
   d_bApplyBaseSettings: 1
+  d_bCalcDefaultSpringForce: 0
   wheels:
   - {fileID: 3753830700424686946}
   - {fileID: 6173011707811296937}
@@ -1072,7 +1073,7 @@ MonoBehaviour:
   baseSettings:
     restLength: 1
     springTravel: 0.5
-    springStiffness: 800
+    springStiffness: 600
     damperStiffness: 10
     wheelRadius: 0.8
   groundMask:
