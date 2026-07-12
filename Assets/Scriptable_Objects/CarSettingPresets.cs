@@ -6,13 +6,19 @@ public class CarSettingPresets : ScriptableObject
 {
     public EngineValues engine;
     [Space]
-    //Fwd Frictions
+    [Header("Forward Friction")]
     public FrictionValues frontFwdFriction;
     public FrictionValues rearFwdFriction;
     [Space]
+    public FrictionValues frontFwdBrakeFriction;
+    public FrictionValues rearFwdBrakeFriction;
     //Side Frictions
+    [Header("Side Friction")]
     public FrictionValues frontSideFriction;
     public FrictionValues rearSideFriction;
+    [Space]
+    public FrictionValues frontSideBrakeFriction;
+    public FrictionValues rearSideBrakeFriction;
     [Space]
     public float wheelMass;
 }

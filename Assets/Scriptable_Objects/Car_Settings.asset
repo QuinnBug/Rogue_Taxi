@@ -38,24 +38,24 @@ MonoBehaviour:
         time: 0.5
         value: 1
         inSlope: 0
-        outSlope: 0
-        tangentMode: 136
+        outSlope: -1.7446712
+        tangentMode: 1
         weightedMode: 0
         inWeight: 0.33333334
-        outWeight: 0.33333334
+        outWeight: 0.11182606
       - serializedVersion: 3
         time: 1
         value: 0
-        inSlope: -4.8967123
-        outSlope: -4.8967123
+        inSlope: 0
+        outSlope: 0
         tangentMode: 0
         weightedMode: 0
-        inWeight: 0.03700745
+        inWeight: 0.080450654
         outWeight: 0
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    maxSpeed: 100
+    maxSpeed: 200
     currentPercent: 0
   frontFwdFriction:
     frictionCurve:
@@ -109,13 +109,127 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
     currentPercent: 0
+  frontFwdBrakeFriction:
+    frictionCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0.05
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 0.75
+        value: 0.05
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: 0.1
+        inSlope: 0.49127334
+        outSlope: 0.49127334
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.08688688
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    currentPercent: 0
+  rearFwdBrakeFriction:
+    frictionCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0.15
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 0.75
+        value: 0.15
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: 0.2
+        inSlope: 0.49127334
+        outSlope: 0.49127334
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.08688688
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    currentPercent: 0
   frontSideFriction:
     frictionCurve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.6
+        value: 0.4
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 0.3
+        value: 0.35
+        inSlope: -0.21428573
+        outSlope: -0.21428573
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 0.7
+        value: 0.25
+        inSlope: -0.2142857
+        outSlope: -0.2142857
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: 0.2
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    currentPercent: 0
+  rearSideFriction:
+    frictionCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0.65
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -125,17 +239,17 @@ MonoBehaviour:
       - serializedVersion: 3
         time: 0.3
         value: 0.5
-        inSlope: -0.3571429
-        outSlope: -0.3571429
-        tangentMode: 136
+        inSlope: -0.6337005
+        outSlope: -0.6337005
+        tangentMode: 0
         weightedMode: 0
-        inWeight: 0.33333334
+        inWeight: 0.14445156
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 0.7
-        value: 0.35
-        inSlope: -0.28571418
-        outSlope: -0.28571418
+        value: 0.3
+        inSlope: 0
+        outSlope: 0
         tangentMode: 136
         weightedMode: 0
         inWeight: 0.33333334
@@ -153,13 +267,13 @@ MonoBehaviour:
       m_PostInfinity: 2
       m_RotationOrder: 4
     currentPercent: 0
-  rearSideFriction:
+  frontSideBrakeFriction:
     frictionCurve:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
         time: 0
-        value: 0.7
+        value: 0.1
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -167,17 +281,8 @@ MonoBehaviour:
         inWeight: 0.33333334
         outWeight: 0.33333334
       - serializedVersion: 3
-        time: 0.3
-        value: 0.55
-        inSlope: -0.6337005
-        outSlope: -0.6337005
-        tangentMode: 0
-        weightedMode: 0
-        inWeight: 0.14445156
-        outWeight: 0.33333334
-      - serializedVersion: 3
-        time: 0.7
-        value: 0.35
+        time: 0.75
+        value: 0.1
         inSlope: 0
         outSlope: 0
         tangentMode: 136
@@ -186,7 +291,33 @@ MonoBehaviour:
         outWeight: 0.33333334
       - serializedVersion: 3
         time: 1
-        value: 0.35
+        value: 0.175
+        inSlope: 0.57146275
+        outSlope: 0.57146275
+        tangentMode: 0
+        weightedMode: 0
+        inWeight: 0.16450119
+        outWeight: 0.33333334
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    currentPercent: 0
+  rearSideBrakeFriction:
+    frictionCurve:
+      serializedVersion: 2
+      m_Curve:
+      - serializedVersion: 3
+        time: 0
+        value: 0.1
+        inSlope: 0
+        outSlope: 0
+        tangentMode: 136
+        weightedMode: 0
+        inWeight: 0.33333334
+        outWeight: 0.33333334
+      - serializedVersion: 3
+        time: 1
+        value: 0.1
         inSlope: 0
         outSlope: 0
         tangentMode: 136

@@ -65,7 +65,7 @@ public class TruckController : MonoBehaviour
         }
 
         PhysicsUpdate();
-        m_suspension.WheelsUpdate(m_driveSettings);
+        m_suspension.WheelsUpdate(m_driveSettings, m_inputs.brake);
     }
 
     private void ModelUpdate()

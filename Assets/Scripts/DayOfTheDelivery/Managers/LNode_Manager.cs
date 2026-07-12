@@ -347,7 +347,7 @@ public class LNode_Manager : Singleton<LNode_Manager>
 
     private void OnValidate()
     {
-        ValueClamps(clampValues);
+        if (clampValues) { ValueClamps(clampValues); }
     }
 
     private void OnDrawGizmos()

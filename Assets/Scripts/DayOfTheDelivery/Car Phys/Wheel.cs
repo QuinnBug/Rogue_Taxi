@@ -32,24 +32,25 @@ public class Wheel : MonoBehaviour
     private float maxLength;
     public float springMoveSpeed;
 
-    public void PhysicsUpdate(Rigidbody _rb)
+    public void PhysicsUpdate(Rigidbody _rb, bool _braking)
     {
         UpdatePosition(_rb.transform);
         if (UpdateSpringLength(-transform.up))
         {
             _rb.AddForceAtPosition(GetSuspensionForce(_rb, groundNormal), hingePosition);
-            UpdateForces(_rb);
+            UpdateForces(_rb, _braking);
         }
     }
 
-    public void UpdateForces(Rigidbody _rb)
+    public void UpdateForces(Rigidbody _rb, bool _braking)
     {
         // Acceleration
-        if (drive) { 
+        if (drive) 
+        { 
             driveForce = (transform.forward * torque) / Time.fixedDeltaTime;
             _rb.AddForceAtPosition(driveForce, transform.position);
         }
-        
+
         fwdForce = GetFrictionForce(_rb, transform.forward, fwdFriction);
         _rb.AddForceAtPosition(fwdForce, transform.position);
 

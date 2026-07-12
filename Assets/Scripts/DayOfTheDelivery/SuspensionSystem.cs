@@ -6,8 +6,6 @@ using UnityEngine.UIElements;
 public class SuspensionSystem : MonoBehaviour
 {
     public bool d_bShowPoints;
-    public bool d_bApplyBaseSettings;
-    public bool d_bCalcDefaultSpringForce;
     [Space]
     public Wheel[] wheels;
     public SuspensionSettings baseSettings;
@@ -23,13 +21,13 @@ public class SuspensionSystem : MonoBehaviour
     }
 
     // Update is called once per frame
-    public void WheelsUpdate(CarSettingPresets settings)
+    public void WheelsUpdate(CarSettingPresets settings, bool braking)
     {
         foreach (Wheel wheel in wheels)
         {
-            if (d_bApplyBaseSettings) { UpdateWheelSettings(wheel, settings); }
+            UpdateWheelSettings(wheel, settings, braking);
 
-            wheel.PhysicsUpdate(m_rb);
+            wheel.PhysicsUpdate(m_rb, braking);
         }
     }
 
@@ -47,19 +45,19 @@ public class SuspensionSystem : MonoBehaviour
         return groundedI / wheels.Length;
     }
 
-    void UpdateWheelSettings(Wheel wheel, CarSettingPresets carSettings)
+    void UpdateWheelSettings(Wheel wheel, CarSettingPresets carSettings, bool _braking)
     {
         wheel.settings = baseSettings;
         wheel.wheelMass = carSettings.wheelMass;
-        wheel.fwdFriction.ApplyChanges(wheel.offset.z > 0 ? carSettings.frontFwdFriction : carSettings.rearFwdFriction);
-        wheel.sideFriction.ApplyChanges(wheel.offset.z > 0 ? carSettings.frontSideFriction : carSettings.rearSideFriction);
-    }
-
-    private void OnValidate()
-    {
-        if (d_bCalcDefaultSpringForce)
+        if (_braking)
         {
-            baseSettings.springStiffness = m_rb.mass * 9.8f / 4.0f / (baseSettings.springTravel * 0.5f);
+            wheel.fwdFriction.ApplyChanges(wheel.offset.z > 0 ? carSettings.frontFwdBrakeFriction : carSettings.rearFwdBrakeFriction);
+            wheel.sideFriction.ApplyChanges(wheel.offset.z > 0 ? carSettings.frontSideBrakeFriction : carSettings.rearSideBrakeFriction);
+        }
+        else
+        {
+            wheel.fwdFriction.ApplyChanges(wheel.offset.z > 0 ? carSettings.frontFwdFriction : carSettings.rearFwdFriction);
+            wheel.sideFriction.ApplyChanges(wheel.offset.z > 0 ? carSettings.frontSideFriction : carSettings.rearSideFriction);
         }
     }
 

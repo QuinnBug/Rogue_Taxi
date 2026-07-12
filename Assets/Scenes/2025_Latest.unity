@@ -1622,10 +1622,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 8231434879047456012, guid: 376e3b28b5e2b5843b5b6f9211829831, type: 3}
-      propertyPath: baseSettings.springStiffness
-      value: 800
-      objectReference: {fileID: 0}
     - target: {fileID: 8550650907020814402, guid: 376e3b28b5e2b5843b5b6f9211829831, type: 3}
       propertyPath: m_Name
       value: Player (Car)
@@ -2074,9 +2070,9 @@ MonoBehaviour:
   angle: 45
   m_length: 100
   m_nodeLimitRange:
-    min: 50
+    min: 75
     max: 200
-  clampValues: 1
+  clampValues: 0
   nodesPerStep: 25
   timePerStep: 0.01
 --- !u!4 &2109595311
@@ -2113,9 +2109,9 @@ MonoBehaviour:
   db_drawPoints: 0
   s_nodeManager: {fileID: 2109595310}
   m_roadWidth: 18
-  m_nodeRadius: 35
+  m_nodeRadius: 28
   m_doubleSided: 0
-  m_fGroundOffset: 0.2
+  m_fGroundOffset: 0.1
   m_extrude: 0
   m_extrusionDepth: -2
   m_maxLineLength: 10
