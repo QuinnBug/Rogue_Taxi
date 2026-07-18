@@ -5,11 +5,16 @@ using UnityEngine.PlayerLoop;
 
 public class Wheel : MonoBehaviour
 {
+    //Debug
+    public bool d_debugMode;
+
+    //internal
     internal Vector3 hingePosition;
     internal bool grounded = false;
     internal Vector3 groundPos;
     internal Vector3 groundNormal = Vector3.zero;
 
+    //Settings
     public Vector3 offset;
     public SuspensionSettings settings;
     public LayerMask groundMask;
@@ -60,7 +65,8 @@ public class Wheel : MonoBehaviour
 
     private Vector3 GetFrictionForce(Rigidbody _rb, Vector3 direction, FrictionValues friction)
     {
-        Vector3 tireWorldVel = _rb.GetPointVelocity(hingePosition);
+        Vector3 tireWorldVel = _rb.GetPointVelocity(transform.position);
+        tireWorldVel.y = 0;
         float velInDirection = Vector3.Dot(direction, tireWorldVel);
         friction.Update(velInDirection, tireWorldVel.magnitude);
 
@@ -116,6 +122,9 @@ public class Wheel : MonoBehaviour
 
     private void OnDrawGizmos()
     {
+
+        if (!d_debugMode) { return; }
+
         //if (driveForce.magnitude > 0)
         //{
         //    Gizmos.color = Color.lavender;
@@ -124,32 +133,39 @@ public class Wheel : MonoBehaviour
 
         if (fwdForce.magnitude > 0)
         {
-            Gizmos.color = Color.cyan;
-            Gizmos.DrawLine(hingePosition, hingePosition + (-transform.forward * fwdFriction.currentPercent));
+            Gizmos.color = Color.blue;
+            Gizmos.DrawLine(hingePosition, hingePosition + (transform.forward * fwdFriction.d_dirSpd));
         }
 
         if (sideForce.magnitude > 0)
         {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawLine(hingePosition, hingePosition + (transform.right * sideFriction.currentPercent));
+            Gizmos.color = Color.red;
+            Gizmos.DrawLine(hingePosition, hingePosition + (transform.right * sideFriction.d_dirSpd));
         }
 
-        //Handles.Label(
-        //    hingePosition + Vector3.up * 2 + Vector3.back * 0.5f,
-        //    ((int)(fwdFriction.currentPercent * 100)).ToString()
-        //);
-        //Handles.Label(
-        //    hingePosition + Vector3.up * 2 + Vector3.back * 1.0f,
-        //    ((int)(sideFriction.currentPercent * 100)).ToString()
-        //    );
+        int fwdPc = ((int)(fwdFriction.frictionPercent * 100));
+        int sidePc = ((int)(sideFriction.frictionPercent * 100));
         Handles.Label(
             hingePosition + Vector3.up * 2 + Vector3.back * 0.5f,
-            fwdFriction.currentValue.ToString()
+            fwdPc.ToString()
         );
         Handles.Label(
             hingePosition + Vector3.up * 2 + Vector3.back * 1.0f,
-            sideFriction.currentValue.ToString()
+            sidePc.ToString()
             );
+        Handles.Label(
+            hingePosition + Vector3.up * 2 + Vector3.back * 1.5f,
+            (fwdPc + sidePc).ToString()
+            );
+
+        //Handles.Label(
+        //    hingePosition + Vector3.up * 2 + Vector3.back * 0.5f,
+        //    fwdFriction.currentValue.ToString()
+        //);
+        //Handles.Label(
+        //    hingePosition + Vector3.up * 2 + Vector3.back * 1.0f,
+        //    sideFriction.currentValue.ToString()
+        //    );
 
         if (!Application.isPlaying)
         {

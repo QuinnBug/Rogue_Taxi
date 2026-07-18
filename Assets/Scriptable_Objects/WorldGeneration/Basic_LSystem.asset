@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82b6aa1f7e3d7fe4b85bfff6484cc31b, type: 3}
+  m_Name: Basic_LSystem
+  m_EditorClassIdentifier: Assembly-CSharp::LSystem
+  rules:
+  - input: 111
+    outputs:
+    - f?
+  - input: 108
+    outputs:
+    - <
+    - <<
+  - input: 114
+    outputs:
+    - '>'
+    - '>>'
+  - input: 117
+    outputs:
+    - d?
+    - d[?]?
+  - input: 63
+    outputs:
+    - f
+    - ff
+    - fff
+  - input: 63
+    outputs:
+    - u
+    - ru
+    - lu
+  axiom: o
+  finalString: 
+  randomRuleOutput: 1
+  iterations: 25
+  angle: 45
+  m_length: 150
+  m_nodeLimitRange:
+    min: 100
+    max: 300

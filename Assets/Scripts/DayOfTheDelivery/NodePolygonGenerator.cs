@@ -431,24 +431,6 @@ public class NodePolygonGenerator : MonoBehaviour
         return _poly;
     }
 
-    private void OnValidate()
-    {
-        if(s_nodeManager != null) ValueClamps(s_nodeManager.clampValues);
-    }
-
-    public void ValueClamps(bool forceUpdate = false)
-    {
-        if (m_nodeRadius >= (s_nodeManager.m_nodeLimitRange.min / 2)*0.75f || forceUpdate)
-        {
-            //nodeRadius = (nodeManager.nodeLimitRange.min / 2) * 0.75f;
-        }
-
-        if (m_roadWidth > m_nodeRadius * 0.75f || forceUpdate)
-        {
-            //roadWidth = nodeRadius * 0.75f;
-        }
-    }
-
     private void OnDrawGizmos()
     {
         if (m_nodePolygons != null && (db_drawPolygons || db_drawPoints))

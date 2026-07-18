@@ -8,26 +8,33 @@ using Random = UnityEngine.Random;
 /// Uses an L system to generate a sequence of roads, and then creates a mesh for each of them
 /// </summary>
 
+[CreateAssetMenu(fileName = "LSystem", menuName = "World/LSys")]
 [System.Serializable]
-public class LSystem
+public class LSystem : ScriptableObject
 {
     public List<LRule> rules;
     public string axiom;
-
     public string finalString;
     [Space]
     public bool randomRuleOutput;
+    [Space]
+    public int iterations = 5;
+    [Space]
+    public int angle;
+    public int m_length;
+    //below the minimum the nodes combine, above the maximum connections are broken
+    public Range<float> m_nodeLimitRange;
 
-    HashSet<char> inputList = new HashSet<char>();
+    HashSet<char> inputList;
 
     public void IterateTree()
     {
-        string newLine = "";
+        string newString = "";
         foreach (char character in finalString)
         {
             if (!inputList.Contains(character))
             {
-                newLine += character;
+                newString += character;
             }
             else
             {
@@ -35,25 +42,18 @@ public class LSystem
                 {
                     if (rule.input == character)
                     {
-                        newLine += rule.FetchOutput(randomRuleOutput);
+                        newString += rule.FetchOutput(randomRuleOutput);
                     }
                 }
             }
         }
 
-        //string newLine = finalString;
-        //foreach (LRule rule in rules)
-        //{
-        //    newLine = rule.Pass(newLine, randomRuleOutput);
-        //}
-
-
-        //Debug.Log(newLine);
-        finalString = newLine;
+        finalString = newString;
     }
 
-    public void GenerateSequence(int iterations)
+    public void GenerateSequence()
     {
+        inputList = new HashSet<char>();
         foreach(LRule rule in rules) 
         {
             inputList.Add(rule.input);
@@ -89,7 +89,6 @@ public struct LRule
         }
 
         return line;
-
     }
 
     public string FetchOutput(bool randomOutput) 

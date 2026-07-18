@@ -26,31 +26,46 @@ public class CarSettingPresets : ScriptableObject
 [System.Serializable]
 public class FrictionValues
 {
+    //Debug
+    public float d_dirSpd = 0;
+    public float d_fullSpd = 0;
+
     // Settings
     public AnimationCurve frictionCurve;
+    public AnimationCurve velocityCurve;
+    public float maxVelocity;
 
     //Variables
     [SerializeField]
-    internal float currentPercent;
+    internal float frictionPercent;
+    [SerializeField]
+    internal float velocityPercent;
     [Range(0.0f, 1.0f)] internal float currentValue;
 
     public void ApplyChanges(FrictionValues other)
     {
         frictionCurve = other.frictionCurve;
+        velocityCurve = other.velocityCurve;
+        maxVelocity = other.maxVelocity;
     }
 
     public void Update(float directionalVelocity, float totalVelocity)
     {
+        d_dirSpd = directionalVelocity;
+        d_fullSpd = totalVelocity;
+
         if (totalVelocity <= 0.01f)
         {
-            currentPercent = 0.0f;
+            frictionPercent = 0.0f;
+            velocityPercent = 0.0f;
         }
         else
         {
-            currentPercent = Mathf.Clamp01(Mathf.Abs(directionalVelocity) / totalVelocity);
+            frictionPercent = Mathf.Clamp01(Mathf.Abs(directionalVelocity) / totalVelocity);
+            velocityPercent = Mathf.Clamp01(totalVelocity / maxVelocity);
         }
 
-        currentValue = frictionCurve.Evaluate(currentPercent);
+        currentValue = frictionCurve.Evaluate(frictionPercent) * velocityCurve.Evaluate(velocityPercent);
     }
 }
 

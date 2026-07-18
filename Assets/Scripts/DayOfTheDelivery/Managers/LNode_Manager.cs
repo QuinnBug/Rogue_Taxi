@@ -18,14 +18,9 @@ public class LNode_Manager : Singleton<LNode_Manager>
     public bool showNodes = false;
     public bool showLabels = false;
     [Space]
-    public LSystem lSys = new LSystem();
-    public int count = 5;
-    [Space]
-    public int angle;
-    public int m_length;
-    //below the minimum the nodes combine, above the maximum connections are broken
-    public Range<float> m_nodeLimitRange;
-    public bool clampValues = false;
+    public LSystem lSysTemplate;
+    [SerializeField]
+    private LSystem lSys;
     [Space]
     public int nodesPerStep = 50;
     public float timePerStep;
@@ -35,6 +30,7 @@ public class LNode_Manager : Singleton<LNode_Manager>
 
     public void Start()
     {
+        lSys = Instantiate(lSysTemplate);
         Event_Manager.Instance.AddListener(E_Event.Game, E_Action.Start, VisualizeSequence);
     }
 
@@ -42,7 +38,7 @@ public class LNode_Manager : Singleton<LNode_Manager>
     public void VisualizeSequence() 
     {
         Event_Manager.Instance.InvokeEvent(E_Event.Nodes, E_Action.Start);
-        lSys.GenerateSequence(count);
+        lSys.GenerateSequence();
         StartCoroutine(CreateRouteCoroutine(lSys.finalString));
     }
 
@@ -66,22 +62,22 @@ public class LNode_Manager : Singleton<LNode_Manager>
             switch (_instruction)
             {
                 case Instructions.DRAW:
-                    currentPos += direction * m_length;
+                    currentPos += direction * lSys.m_length;
                     prevNode = AddNode(currentPos, prevNode);
                     counter++;
                     tempPos = currentPos;
                     break;
 
                 case Instructions.LEFT_TURN:
-                    direction = Quaternion.Euler(0, angle * -1, 0) * direction;
+                    direction = Quaternion.Euler(0, lSys.angle * -1, 0) * direction;
                     break;
 
                 case Instructions.RIGHT_TURN:
-                    direction = Quaternion.Euler(0, angle, 0) * direction;
+                    direction = Quaternion.Euler(0, lSys.angle, 0) * direction;
                     break;
 
                 case Instructions.SAVE:
-                    savePoints.Push(new LAgent(currentPos, tempPos, direction, m_length));
+                    savePoints.Push(new LAgent(currentPos, tempPos, direction, lSys.m_length));
                     break;
 
                 case Instructions.LOAD:
@@ -91,21 +87,17 @@ public class LNode_Manager : Singleton<LNode_Manager>
                         currentPos = ag.position;
                         tempPos = ag.tempPos;
                         direction = ag.direction;
-                        m_length = ag.length;
-                        List<Node> localNodes = GetNodesInRange(currentPos, (int)Math.Ceiling(m_nodeLimitRange.min), true);
+                        List<Node> localNodes = GetNodesInRange(currentPos, (int)Math.Ceiling(lSys.m_nodeLimitRange.min), true);
 
                         if (localNodes.Count == 0) { Debug.LogError("[LNM] No nodes found at loaded position"); }
                         foreach (Node item in localNodes)
                         {
-                            if (Vector3.Distance(currentPos, item.m_point) <= m_nodeLimitRange.min)
+                            if (Vector3.Distance(currentPos, item.m_point) <= lSys.m_nodeLimitRange.min)
                             {
                                 prevNode = item;
                                 break;
                             }
                         }
-
-                        //Debug.DrawLine(currentPos + (Vector3.up * 2), currentPos + (-direction * length), Color.orange, 300);
-                        //Debug.LogError("[LNM] Didn't find a current node");
                     }
                     break;
 
@@ -151,10 +143,10 @@ public class LNode_Manager : Singleton<LNode_Manager>
     {
         Node nodeAtPosition = null;
 
-        NodeList nodesInRange = GetNodesInRange(_position, (int)Mathf.Ceil(m_nodeLimitRange.min), true);
+        NodeList nodesInRange = GetNodesInRange(_position, (int)Mathf.Ceil(lSys.m_nodeLimitRange.min), true);
         foreach (Node item in nodesInRange)
         {
-            if (_position == item.m_point || Vector3.Distance(_position, item.m_point) <= m_nodeLimitRange.min)
+            if (_position == item.m_point || Vector3.Distance(_position, item.m_point) <= lSys.m_nodeLimitRange.min)
             {
                 nodeAtPosition = item;
                 break;
@@ -170,7 +162,7 @@ public class LNode_Manager : Singleton<LNode_Manager>
             m_nodeMap[mapKey].Add(nodeAtPosition);
         }
 
-        nodeAtPosition.AddConnection(_parent);
+        nodeAtPosition.AddConnection(_parent, lSys.m_nodeLimitRange.max);
 
         return nodeAtPosition;
     }
@@ -199,11 +191,11 @@ public class LNode_Manager : Singleton<LNode_Manager>
                     focusNode.RemoveConnection(connectedNode);
                     checkingNode.RemoveConnection(intersectedNode);
 
-                    focusNode.AddConnection(checkingNode);
-                    focusNode.AddConnection(intersectedNode);
+                    focusNode.AddConnection(checkingNode, lSys.m_nodeLimitRange.max);
+                    focusNode.AddConnection(intersectedNode, lSys.m_nodeLimitRange.max);
 
-                    connectedNode.AddConnection(checkingNode);
-                    connectedNode.AddConnection(intersectedNode);
+                    connectedNode.AddConnection(checkingNode, lSys.m_nodeLimitRange.max);
+                    connectedNode.AddConnection(intersectedNode, lSys.m_nodeLimitRange.max);
 
                     //new Line(focusNode.point,   checkingNode.point   ).DebugDraw(Color.green    , 1200, Vector3.up * 2, true);
                     //new Line(focusNode.point,   intersectedNode.point).DebugDraw(Color.purple   , 1200, Vector3.up * 2, true);
@@ -217,19 +209,6 @@ public class LNode_Manager : Singleton<LNode_Manager>
         }
 
         return didUntangle;
-    }
-
-    public void ValueClamps(bool _forceUpdate = false) 
-    {
-        if (m_nodeLimitRange.min >= m_length / 2.0f || _forceUpdate)
-        {
-            m_nodeLimitRange.min = m_length / 2.0f;
-        }
-
-        if (m_nodeLimitRange.max <= m_length * 2.0f || _forceUpdate)
-        {
-            m_nodeLimitRange.max = m_length * 2.0f;
-        }
     }
 
     bool TestConnectionIntersectionsWithLine(Node _startNode, Node _endNode, Node _checkNode, out Node _intersectedNode) 
@@ -260,14 +239,14 @@ public class LNode_Manager : Singleton<LNode_Manager>
     public Vector2Int WorldPosToMapKey(Vector3 _position)
     {
         return new Vector2Int(
-            Mathf.FloorToInt(_position.x / m_nodeLimitRange.max),
-            Mathf.FloorToInt(_position.z / m_nodeLimitRange.max)
+            Mathf.FloorToInt(_position.x / lSys.m_nodeLimitRange.max),
+            Mathf.FloorToInt(_position.z / lSys.m_nodeLimitRange.max)
             );
     }
 
     public Vector3 MapKeyToWorldPos(Vector2Int _key) 
     {
-        return new Vector3(_key.x, 0, _key.y) * m_nodeLimitRange.max;
+        return new Vector3(_key.x, 0, _key.y) * lSys.m_nodeLimitRange.max;
     }
 
     public NodeList GetNodesInRange(Vector3 _position, int _range, bool includeCenter) 
@@ -345,14 +324,11 @@ public class LNode_Manager : Singleton<LNode_Manager>
         return allNodes;
     }
 
-    private void OnValidate()
-    {
-        if (clampValues) { ValueClamps(clampValues); }
-    }
-
     private void OnDrawGizmos()
     {
-        float nodeSize = m_length / 15.0f;
+        if (lSys == null) { return; }
+
+        float nodeSize = lSys.m_length / 15.0f;
 
         if (m_nodeMap != null)
         {
@@ -402,10 +378,10 @@ public class Node
         m_connections = new List<Node>();
     }
 
-    public void AddConnection(Node node) 
+    public void AddConnection(Node node, float maxDistance) 
     {
 
-        if (node == this || m_connections.Contains(node) || Vector3.Distance(m_point, node.m_point) >= LNode_Manager.Instance.m_nodeLimitRange.max)
+        if (node == this || m_connections.Contains(node) || Vector3.Distance(m_point, node.m_point) >= maxDistance)
         {
             //if (Vector3.Distance(point, node.point) >= LNode_Manager.Instance.m_nodeLimitRange.max)
             //{

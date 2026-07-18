@@ -16,7 +16,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &2879693651765829105
 Transform:
   m_ObjectHideFlags: 0
@@ -192,6 +192,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 495a3ecd5233c39468953da94f9efc3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Wheel
+  d_debugMode: 0
   offset: {x: 1, y: -0.15, z: 1.5}
   settings:
     restLength: 1
@@ -204,6 +205,8 @@ MonoBehaviour:
     m_Bits: 4294967295
   drive: 0
   fwdFriction:
+    d_dirSpd: 0
+    d_fullSpd: 0
     frictionCurve:
       serializedVersion: 2
       m_Curve:
@@ -228,8 +231,18 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    currentPercent: 0
+    velocityCurve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    maxVelocity: 0
+    frictionPercent: 0
+    velocityPercent: 0
   sideFriction:
+    d_dirSpd: 0
+    d_fullSpd: 0
     frictionCurve:
       serializedVersion: 2
       m_Curve:
@@ -263,7 +276,15 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    currentPercent: 0
+    velocityCurve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    maxVelocity: 0
+    frictionPercent: 0
+    velocityPercent: 0
   wheelMass: 0.035
   torqueDrag: 0
   springMoveSpeed: 50
@@ -316,7 +337,7 @@ MeshRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2017058093542816501}
-  m_Enabled: 1
+  m_Enabled: 0
   m_CastShadows: 1
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
@@ -459,6 +480,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 495a3ecd5233c39468953da94f9efc3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Wheel
+  d_debugMode: 0
   offset: {x: -1, y: -0.15, z: -1.5}
   settings:
     restLength: 1
@@ -471,6 +493,8 @@ MonoBehaviour:
     m_Bits: 4294967295
   drive: 1
   fwdFriction:
+    d_dirSpd: 0
+    d_fullSpd: 0
     frictionCurve:
       serializedVersion: 2
       m_Curve:
@@ -495,8 +519,18 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    currentPercent: 0
+    velocityCurve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    maxVelocity: 0
+    frictionPercent: 0
+    velocityPercent: 0
   sideFriction:
+    d_dirSpd: 0
+    d_fullSpd: 0
     frictionCurve:
       serializedVersion: 2
       m_Curve:
@@ -539,7 +573,15 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    currentPercent: 0
+    velocityCurve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    maxVelocity: 0
+    frictionPercent: 0
+    velocityPercent: 0
   wheelMass: 0.035
   torqueDrag: 0
   springMoveSpeed: 50
@@ -645,6 +687,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 495a3ecd5233c39468953da94f9efc3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Wheel
+  d_debugMode: 0
   offset: {x: -1, y: -0.15, z: 1.5}
   settings:
     restLength: 1
@@ -657,6 +700,8 @@ MonoBehaviour:
     m_Bits: 4294967295
   drive: 0
   fwdFriction:
+    d_dirSpd: 0
+    d_fullSpd: 0
     frictionCurve:
       serializedVersion: 2
       m_Curve:
@@ -681,8 +726,18 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    currentPercent: 0
+    velocityCurve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    maxVelocity: 0
+    frictionPercent: 0
+    velocityPercent: 0
   sideFriction:
+    d_dirSpd: 0
+    d_fullSpd: 0
     frictionCurve:
       serializedVersion: 2
       m_Curve:
@@ -716,7 +771,15 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    currentPercent: 0
+    velocityCurve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    maxVelocity: 0
+    frictionPercent: 0
+    velocityPercent: 0
   wheelMass: 0.035
   torqueDrag: 0
   springMoveSpeed: 50
@@ -817,7 +880,7 @@ MeshCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6422763426974868842}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: 65f5457d9763563449775a011041177a, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -1056,10 +1119,10 @@ MonoBehaviour:
     maxSpeed: 0
     currentPercent: 0
   m_stats:
-    revScale: 3
+    revScale: 1.5
     turnSpeed: 3
     turnResetRate: 5
-    fWheelLimit: 30
+    fWheelLimit: 35
   m_debugSpeed: 10
   m_shotPrefab: {fileID: 7185162933015889852, guid: 3deed2ddcc44279439d6b6bbd1f1a8d3, type: 3}
   m_deliveryCannon: {fileID: 3429576596971621916}
@@ -1079,16 +1142,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SuspensionSystem
   d_bShowPoints: 0
-  d_bApplyBaseSettings: 1
-  d_bCalcDefaultSpringForce: 0
   wheels:
   - {fileID: 3753830700424686946}
   - {fileID: 6173011707811296937}
   - {fileID: 4633210192318767753}
   - {fileID: 4666418458185013842}
   baseSettings:
-    restLength: 1
-    springTravel: 0.5
+    restLength: 0.75
+    springTravel: 0.1
     springStiffness: 800
     damperStiffness: 10
     wheelRadius: 0.8
@@ -1197,6 +1258,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 495a3ecd5233c39468953da94f9efc3e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Wheel
+  d_debugMode: 0
   offset: {x: 1, y: -0.15, z: -1.5}
   settings:
     restLength: 1
@@ -1209,6 +1271,8 @@ MonoBehaviour:
     m_Bits: 4294967295
   drive: 1
   fwdFriction:
+    d_dirSpd: 0
+    d_fullSpd: 0
     frictionCurve:
       serializedVersion: 2
       m_Curve:
@@ -1233,8 +1297,18 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    currentPercent: 0
+    velocityCurve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    maxVelocity: 0
+    frictionPercent: 0
+    velocityPercent: 0
   sideFriction:
+    d_dirSpd: 0
+    d_fullSpd: 0
     frictionCurve:
       serializedVersion: 2
       m_Curve:
@@ -1277,7 +1351,15 @@ MonoBehaviour:
       m_PreInfinity: 2
       m_PostInfinity: 2
       m_RotationOrder: 4
-    currentPercent: 0
+    velocityCurve:
+      serializedVersion: 2
+      m_Curve: []
+      m_PreInfinity: 2
+      m_PostInfinity: 2
+      m_RotationOrder: 4
+    maxVelocity: 0
+    frictionPercent: 0
+    velocityPercent: 0
   wheelMass: 0.035
   torqueDrag: 0
   springMoveSpeed: 50

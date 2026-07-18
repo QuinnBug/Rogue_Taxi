@@ -4,15 +4,14 @@ using UnityEngine.InputSystem;
 
 public class TruckController : MonoBehaviour
 {
-    public Transform[] m_aWheelTransforms; //for turning the front wheels - can move this to the wheel I think
+    public Transform[] m_aWheelTransforms; //for turning the front wheels - can move this to a bool in the wheel I think
     public Rigidbody m_physics;
     public SuspensionSystem m_suspension;
     public InputHandler m_inputs;
     [Space]
     public CarSettingPresets m_driveSettings;
     [Space]
-    [SerializeField]
-    private EngineValues m_engine;
+    public EngineValues m_engine;
     [Space]
     public TruckStats m_stats;
     public float m_debugSpeed = 10;
@@ -26,10 +25,6 @@ public class TruckController : MonoBehaviour
 
     private float m_revs = 0;
     private float m_turning = 0;
-
-    //This is input stuff
-    private float m_turnInput;
-    private float m_moveInput;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()

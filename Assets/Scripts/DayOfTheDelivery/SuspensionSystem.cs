@@ -49,6 +49,7 @@ public class SuspensionSystem : MonoBehaviour
     {
         wheel.settings = baseSettings;
         wheel.wheelMass = carSettings.wheelMass;
+
         if (_braking)
         {
             wheel.fwdFriction.ApplyChanges(wheel.offset.z > 0 ? carSettings.frontFwdBrakeFriction : carSettings.rearFwdBrakeFriction);
