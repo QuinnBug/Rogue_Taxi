@@ -1,3 +1,4 @@
+using NUnit;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -502,6 +503,41 @@ namespace Utility
 			V = c - a;
 			return Vector3.Cross(U, V).normalized;
 		}
-	}
+
+        public static Vector3[] SimpleBeziarCurve(Vector3 _start, Vector3 _end, Vector3 _pull, int _resolution = 10)
+        {
+			Vector3[] points = new Vector3[_resolution + 1];
+            for (int i = 0; i <= _resolution; ++i)
+            {
+				float t = (float)i / _resolution;
+
+				Vector3 a = Vector3.Lerp(_start, _pull, t);
+				Vector3 b = Vector3.Lerp(_pull, _end, t);
+				points[i] = Vector3.Lerp(a, b, t);
+            }
+
+			return points;
+
+			//Vector3 diff = b - a;
+			//float span = diff.magnitude;
+			//if (span > 2f * _radius) { _radius = _radius = span / 2f; } // Clamp radius
+
+			//Vector3 perp = new Vector2(diff.z, -diff.x) / span;
+			//perp *= Mathf.Sign(_radius) * Mathf.Sqrt(_radius * _radius - span * span / 4f);
+			//Vector3 center = a + diff / 2f + perp;
+
+			//float startA = Mathf.Atan2(a.z - center.z, a.x - center.x);
+			//float endA = Mathf.Atan2(b.z - center.z, b.x - center.x);
+			//float travel = (endA - startA + _radius * Mathf.PI) % (2f * Mathf.PI) - Mathf.PI;
+
+			//for (int i = 0; i < _resolution; i++)
+			//{
+			//	float p = startA + ((float)i / (_resolution - 1)) * travel;
+			//	points[i] = center + new Vector3(Mathf.Cos(p), a.y, Mathf.Sin(p)) * _radius;
+			//}
+
+			//return points;
+		}
+    }
 }
 

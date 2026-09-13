@@ -185,6 +185,30 @@ public class NodePolygonGenerator : MonoBehaviour
             }
         }
 
+        //for each line, see if it needs to curve around the node
+        for (int lineIdx = 0; lineIdx < lineCount; ++lineIdx)
+        { 
+            if (nodeLines[lineIdx].CircleIntersections(node.m_point, m_roadWidth*0.9f, out Vector3[] intersections))
+            {
+                var start = nodeLines[lineIdx].a;
+                var end = nodeLines[lineIdx].b;
+                var lineCenter = Vector3.Lerp(start, end, 0.5f);
+                var pullDir = Vector3.Normalize(lineCenter - node.m_point);
+                var pull = node.m_point + (pullDir * (m_roadWidth * 1.0f));
+                Debug.DrawLine(start, pull, Color.orange, 9999);
+                Debug.DrawLine(pull, end, Color.orange, 9999);
+
+                //if the line intersects the node radius then we need to generate a circle
+                var points = Utility.Geometry.SimpleBeziarCurve(start, end, pull);
+                nodeLines.RemoveAt(lineIdx);
+                for (int i = 0; i < points.Length - 1; ++i)
+                {
+                    nodeLines.Insert(lineIdx + i, new Line(points[i], points[i + 1]));
+                    //Debug.DrawLine(points[i], points[i + 1], Color.mintCream, 9999);
+                }
+            }
+        }
+
         //List<Line> splitLines = new List<Line>();
 
         //foreach (Line line in nodeLines)
@@ -238,11 +262,14 @@ public class NodePolygonGenerator : MonoBehaviour
                 //Does the linkingLine overlap the centre 
                 if (linkingLine.DoesIntersect(_node.m_point, conn.m_point, out Vector3 intersectionPoint))
                 {
+                    //linkingLine.DebugDraw(Color.crimson, 9999, Vector3.up * 5);
                     Vector3 direction = (_node.m_point - Vector3.Lerp(linkingLine.a, linkingLine.b, 0.5f)).normalized;
                     Line overlapFixLine = new Line(linkingLine.a, _node.m_point + (direction * (m_roadWidth * 0.5f)));
                     linkingLine.a = overlapFixLine.b;
                     nodeLines.Add(overlapFixLine);
                 }
+
+                //linkingLine.DebugDraw(Color.midnightBlue, 9999, Vector3.up * 2);
 
                 nodeLines.Add(linkingLine);
             }
@@ -273,6 +300,12 @@ public class NodePolygonGenerator : MonoBehaviour
         return results;
     }
 
+    /// <summary>
+    /// Returns 4 corners to form a polygon from node to conn
+    /// </summary>
+    /// <param name="_node">The base Node</param>
+    /// <param name="_conn">The node at the end of the connection</param>
+    /// <returns></returns>
     private Vector3[] GetNodeToConnectionPolygonCorners(Node _node, Node _conn) 
     {
         Vector3[] corners = new Vector3[4];

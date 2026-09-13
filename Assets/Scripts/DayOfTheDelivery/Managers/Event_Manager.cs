@@ -18,6 +18,7 @@ public enum E_Event
     RoadMeshes,
     Buildings,
     NavMesh,
+    Race,
     GamePlay
 }
 

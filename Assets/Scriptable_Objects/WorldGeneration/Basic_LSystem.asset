@@ -43,7 +43,7 @@ MonoBehaviour:
   randomRuleOutput: 1
   iterations: 25
   angle: 45
-  m_length: 150
+  m_length: 125
   m_nodeLimitRange:
-    min: 100
-    max: 300
+    min: 110
+    max: 250

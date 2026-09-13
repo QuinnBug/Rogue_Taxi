@@ -66,13 +66,13 @@ public class Delivery_Manager : Singleton<Delivery_Manager>
     {
         if (m_availableDeliveries.TryGetValue(id, out Delivery value))
         {
+            value.building.SetHighlight(false);
+            m_availableDeliveries.Remove(id);
+
             if (m_availableDeliveries.Count == 0)
             {
                 RandomNewDelivery();
             }
-
-            value.building.SetHighlight(false);
-            m_availableDeliveries.Remove(id);
 
             SetDeliveryId(m_availableDeliveries.Keys.First());
         }
@@ -119,6 +119,11 @@ public class Delivery_Manager : Singleton<Delivery_Manager>
             newDelivery.building.SetHighlight(true);
         }
     }
+
+    public bool GetCurrentDelivery(out Delivery _delivery)
+    {
+        return m_availableDeliveries.TryGetValue(m_currentDeliveryId, out _delivery);
+    }
 }
 
 public struct Delivery
@@ -131,4 +136,6 @@ public struct Delivery
 
     public BuildingData building;
     public float timeStamp;
+
+    public float TimePassed() {  return Mathf.RoundToInt(Time.time - timeStamp); }
 }

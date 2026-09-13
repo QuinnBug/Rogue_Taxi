@@ -742,7 +742,7 @@ public class Line
             }
             else
             {
-                Debug.Log("regular none " + m_D);
+                //Debug.Log("regular none " + m_D);
                 DebugDraw(Color.red, 3000, Vector3.up);
                 return false;
             }
@@ -791,6 +791,11 @@ public class Line
         }
 
         return false;
+    }
+
+    internal Vector3 CrossProduct()
+    {
+        return Vector3.Normalize(Vector3.Cross(a, b));
     }
 }
 

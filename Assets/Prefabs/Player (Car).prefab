@@ -795,7 +795,7 @@ GameObject:
   - component: {fileID: 6917226733430846286}
   - component: {fileID: 1259031078844232724}
   - component: {fileID: 1698423716836177520}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: body
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1149,7 +1149,7 @@ MonoBehaviour:
   - {fileID: 4666418458185013842}
   baseSettings:
     restLength: 0.75
-    springTravel: 0.1
+    springTravel: 0.2
     springStiffness: 800
     damperStiffness: 10
     wheelRadius: 0.8

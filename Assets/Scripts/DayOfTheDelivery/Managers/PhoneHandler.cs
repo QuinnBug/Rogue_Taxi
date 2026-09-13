@@ -23,7 +23,7 @@ public class PhoneHandler : MonoBehaviour
     [Header("Map Variables")]
     public bool mapMode;
     [Header("Delivery Variables")]
-    public GameObject deliveryLabelPrefab;
+    public DeliveryUILabel deliveryLabel;
     [Header("Upgrade Variables")]
     public bool upgradeMode;
 
@@ -90,6 +90,11 @@ public class PhoneHandler : MonoBehaviour
         {
             navLock = true;
             Delivery_Manager.Instance.ChangeCurrentDelivery(m_inputs.phoneNav.y > 0 ? 1 : -1);
+        }
+
+        if (Delivery_Manager.Instance.GetCurrentDelivery(out Delivery delivery))
+        {
+            deliveryLabel.Refresh(delivery);
         }
     }
 }

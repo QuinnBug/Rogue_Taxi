@@ -3,12 +3,20 @@ using UnityEngine;
 
 public class DeliveryUILabel : MonoBehaviour
 {
-    public int deliveryId;
     public TextMeshProUGUI numberTMP;
+    public TextMeshProUGUI destinationTMP;
+    public TextMeshProUGUI timeTMP;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Init()
+    private TruckController player;
+    private void Start()
     {
-        numberTMP.text = deliveryId.ToString();
+        player = FindFirstObjectByType<TruckController>();
+    }
+
+    public void Refresh(Delivery _delivery)
+    {
+        numberTMP.text = "#" + _delivery.building.m_id.ToString();
+        destinationTMP.text = Mathf.RoundToInt((player.transform.position - _delivery.building.transform.position).magnitude).ToString() + "m";
+        timeTMP.text = _delivery.TimePassed().ToString() + "s";
     }
 }

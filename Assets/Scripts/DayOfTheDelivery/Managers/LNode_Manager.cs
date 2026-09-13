@@ -8,6 +8,7 @@ using NodeList = System.Collections.Generic.List<Node>;
 using NodeMap = System.Collections.Generic.Dictionary<UnityEngine.Vector2Int, System.Collections.Generic.List<Node>>;
 using UnityEditor.Experimental.GraphView;
 using UnityEditor;
+using Utility;
 
 /// <summary>
 /// Uses an L system to generate a sequence of roads, and then creates a mesh for each of them
@@ -324,11 +325,30 @@ public class LNode_Manager : Singleton<LNode_Manager>
         return allNodes;
     }
 
+    public Node GetRandomNode(Vector2Int? zone)
+    {
+        NodeList nodes;
+
+        if (zone.HasValue)
+        {
+            if(!m_nodeMap.TryGetValue(zone.Value, out nodes))
+            {
+                nodes = new NodeList();
+            }
+        }
+        else 
+        {
+            nodes = AllNodes();
+        }
+
+        return nodes[Lists.RandomIndex(nodes.Count)];
+    }
+
     private void OnDrawGizmos()
     {
         if (lSys == null) { return; }
 
-        float nodeSize = lSys.m_length / 15.0f;
+        float nodeSize = 22;
 
         if (m_nodeMap != null)
         {

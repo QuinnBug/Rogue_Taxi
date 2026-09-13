@@ -16,6 +16,9 @@ MonoBehaviour:
   - input: 49
     outputs:
     - f>f>ff<<ff<fff<ff<f<f<<f>f<ff>>fff>f>f
+  - input: 50
+    outputs:
+    - 'ff>f>ff[<ff][>ff]'
   axiom: 1
   finalString: 
   randomRuleOutput: 1

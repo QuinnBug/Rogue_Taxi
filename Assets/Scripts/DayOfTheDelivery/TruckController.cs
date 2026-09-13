@@ -36,7 +36,7 @@ public class TruckController : MonoBehaviour
 
         if (Event_Manager.Instance != null)
         {
-            Event_Manager.Instance.AddListener(E_Event.Buildings, E_Action.Finished, EnableInput);
+            Event_Manager.Instance.AddListener(E_Event.Race, E_Action.Finished, EnableInput);
         }
         else { EnableInput(); }
     }
@@ -57,6 +57,11 @@ public class TruckController : MonoBehaviour
         if (m_inputs.phoneNav.x != 0)
         {
             m_physics.AddForce(transform.right * m_debugSpeed * m_inputs.phoneNav.x);
+        }
+
+        if (m_inputs.phoneNav.y == -1)
+        {
+            transform.rotation = Quaternion.identity;
         }
 
         PhysicsUpdate();
